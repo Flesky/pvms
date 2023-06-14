@@ -1,9 +1,28 @@
 <script setup lang="tsx">
+import { useCookies } from '@vueuse/integrations/useCookies'
+
 definePage({
   path: '/',
+  meta: {
+    requiresAuth: true,
+  },
 })
 
 const collapsed = useLocalStorage('collapsed', false)
+const { remove } = useCookies(['access_token'])
+const router = useRouter()
+
+axios.interceptors.response.use(
+  response => response,
+  (error) => {
+    if (error.response.status === 401) {
+      remove('access_token')
+      router.push('/login')
+    }
+
+    return Promise.reject(error)
+  },
+)
 </script>
 
 <template>
@@ -13,10 +32,10 @@ const collapsed = useLocalStorage('collapsed', false)
         <img class="w-24" src="/logo.svg">
         <app-menu v-bind="{ collapsed }" />
       </div>
-      <app-header-item class="gap-2">
-        <n-avatar circle />
-        Baron
-      </app-header-item>
+      <!--      <app-header-item class="gap-2"> -->
+      <!--        <n-avatar circle /> -->
+      <!--        Baron -->
+      <!--      </app-header-item> -->
     </n-layout-header>
     <n-layout class="!top-14 h-full" embedded position="absolute">
       <router-view v-slot="{ Component }">

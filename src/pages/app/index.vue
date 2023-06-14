@@ -7,19 +7,10 @@ definePage({
 
 const { copy } = useClipboard()
 
-// Generate 50 entries with 1.5 second timeout
-const mockData = new Promise((resolve) => {
-  setTimeout(() => {
-    resolve(Array.from({ length: 50 }, (_, i) => ({
-      // Random 12 alphanumeric characters
-      voucher_code: Math.random().toString(36).substring(2, 14).toUpperCase(),
-      value: [100, 200, 300, 400, 500, 1000][Math.floor(Math.random() * 6)],
-      expiry_date: '2024-12-31',
-      status: i % 4,
-    })))
-  }, 1500)
+const { data, loading } = useRequest(async () => {
+  const res = await axios.get('/voucher')
+  return res.data.results
 })
-const { data, loading, error } = useRequest(() => mockData)
 
 const message = useMessage()
 
@@ -40,13 +31,19 @@ const columns: DataTableColumns = [
     title: 'Value',
   },
   {
+    key: 'created_at',
+    title: 'Created at',
+    // Truncate to 10 characters
+    render: row => row.created_at.slice(0, 10),
+  },
+  {
     key: 'expiry_date',
     title: 'Expiration Date',
   },
   {
     key: 'status',
     title: 'Status',
-    render: row => row.status ? <n-tag type="success">Active</n-tag> : <n-tag>Inactive</n-tag>,
+    render: row => <n-tag type={row.status === 'active' && 'success'}>{row.status}</n-tag>,
   },
   {
     key: 'service_reference',
@@ -64,7 +61,9 @@ const selection = ref([])
 <template>
   <div class="w-full p-4">
     <n-card title="Vouchers">
-      <n-data-table v-bind="{ data, loading, columns, pagination }" :checked-row-keys="selection" :row-key="row => row.voucher_code" @update:checked-row-keys="keys => selection = keys" />
+      <n-scrollbar x-scrollable>
+        <n-data-table v-bind="{ data, loading, columns, pagination }" :checked-row-keys="selection" class="min-w-max" :row-key="row => row.voucher_code" @update:checked-row-keys="keys => selection = keys" />
+      </n-scrollbar>
     </n-card>
   </div>
 </template>
