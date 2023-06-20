@@ -39,21 +39,33 @@ const columns: DataTableColumns = [
   {
     key: 'expiry_date',
     title: 'Expiration Date',
+    render: row => row.expiry_date || 'No Expiry',
   },
   {
     key: 'status',
     title: 'Status',
-    render: row => <n-tag type={row.status === 'active' && 'success'}>{row.status}</n-tag>,
+    render: row => <n-tag>{row.status}</n-tag>,
   },
   {
     key: 'service_reference',
     title: 'Service Reference',
+    render: row => row.service_reference || 'N/A',
+  },
+  {
+    key: 'action',
+    title: 'Action',
+    render: row => <n-button type="primary">Edit</n-button>,
   },
 ]
 
 const pagination: PaginationProps = {
   pageSize: 10,
 }
+
+const selected = reactive({
+  id: null,
+  show: false,
+})
 
 const selection = ref([])
 </script>

@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import type { GlobalThemeOverrides } from 'naive-ui'
 
-import { useCookies } from '@vueuse/integrations/useCookies'
-
 const themeOverrides: GlobalThemeOverrides = {
   common: {
     primaryColor: '#87179d',
@@ -13,8 +11,11 @@ const themeOverrides: GlobalThemeOverrides = {
 }
 
 axios.defaults.baseURL = import.meta.env.VITE_API_URL
-const { get, addChangeListener } = useCookies(['access_token'])
-axios.defaults.headers.common.Authorization = `Bearer ${get('access_token')}`
+const accessToken = useLocalStorage('access_token', undefined)
+axios.defaults.headers.common.Authorization = `Bearer ${accessToken.value}`
+watch(accessToken, () => {
+  console.log('Wahoo')
+})
 </script>
 
 <template>

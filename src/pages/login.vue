@@ -1,16 +1,12 @@
 <script setup>
-import { useCookies } from '@vueuse/integrations/useCookies'
-
 const formValue = ref({})
 
-const { get, set } = useCookies(['access_token'])
 const router = useRouter()
 
 const { loading, error, run } = useRequest(() => axios.post('/login', formValue.value), {
   manual: true,
   onSuccess: (data) => {
-    set('access_token', data.data.access_token)
-    axios.defaults.headers.common.Authorization = `Bearer ${data.data.access_token}`
+    localStorage.setItem('access_token', data.data.access_token)
     router.push('/')
   },
 })

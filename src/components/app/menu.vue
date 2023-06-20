@@ -1,10 +1,5 @@
 <script setup lang="tsx">
 import type { MenuOption } from 'naive-ui'
-
-defineProps<{
-  collapsed: boolean
-}>()
-
 function renderLink(to: string, label: string) {
   return () => <router-link to={to}>{label}</router-link>
 }

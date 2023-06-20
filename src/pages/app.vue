@@ -1,6 +1,4 @@
 <script setup lang="tsx">
-import { useCookies } from '@vueuse/integrations/useCookies'
-
 definePage({
   path: '/',
   meta: {
@@ -8,15 +6,13 @@ definePage({
   },
 })
 
-const collapsed = useLocalStorage('collapsed', false)
-const { remove } = useCookies(['access_token'])
 const router = useRouter()
 
 axios.interceptors.response.use(
   response => response,
   (error) => {
     if (error.response.status === 401) {
-      remove('access_token')
+      localStorage.removeItem('access_token')
       router.push('/login')
     }
 
@@ -30,7 +26,7 @@ axios.interceptors.response.use(
     <n-layout-header bordered class="flex h-14 items-center justify-between px-4 font-medium">
       <div class="flex gap-4">
         <img class="w-24" src="/logo.svg">
-        <app-menu v-bind="{ collapsed }" />
+        <app-menu />
       </div>
       <!--      <app-header-item class="gap-2"> -->
       <!--        <n-avatar circle /> -->
