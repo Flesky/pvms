@@ -19,19 +19,26 @@ axios.interceptors.response.use(
     return Promise.reject(error)
   },
 )
+
+function handleLogout() {
+  localStorage.removeItem('access_token')
+  router.push('/login')
+}
 </script>
 
 <template>
   <n-layout position="absolute">
-    <n-layout-header bordered class="flex h-14 items-center justify-between px-4 font-medium">
+    <n-layout-header bordered class="flex h-14 items-center justify-between !bg-primary px-4 font-medium">
       <div class="flex gap-4">
-        <img class="w-24" src="/logo.svg">
+        <img class="w-24 object-contain" src="/pivotel-logo.png">
         <app-menu />
       </div>
-      <!--      <app-header-item class="gap-2"> -->
-      <!--        <n-avatar circle /> -->
-      <!--        Baron -->
-      <!--      </app-header-item> -->
+      <n-button
+        type="tertiary"
+        @click="handleLogout"
+      >
+        Log out
+      </n-button>
     </n-layout-header>
     <n-layout class="!top-14 h-full" embedded position="absolute">
       <router-view v-slot="{ Component }">

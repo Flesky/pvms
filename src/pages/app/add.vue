@@ -34,7 +34,7 @@ const { loading, error, run } = useRequest(() => axios.post('/voucher', formValu
         </n-form-item>
         <div class="flex justify-end">
           <n-button :loading="loading" type="primary" @click="run">
-            Add voucher
+            Add
           </n-button>
         </div>
       </n-form>

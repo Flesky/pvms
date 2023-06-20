@@ -1,5 +1,6 @@
 <script setup lang="tsx">
 import type { MenuOption } from 'naive-ui'
+
 function renderLink(to: string, label: string) {
   return () => <router-link to={to}>{label}</router-link>
 }
@@ -22,6 +23,7 @@ const options: MenuOption[] = [
 
 <template>
   <n-menu
+    inverted
     mode="horizontal"
     v-bind="{ options }" :value="$route.name"
   />
