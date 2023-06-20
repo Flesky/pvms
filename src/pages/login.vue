@@ -7,14 +7,18 @@ const formValue = ref({
 const router = useRouter()
 
 // TODO: Reimplement proper auth
-const { loading, error, run } = useRequest(() => axios.post('/login', formValue.value), {
-  manual: true,
-  onSuccess: (data) => {
-    localStorage.setItem('access_token', data.data.access_token)
-    axios.defaults.headers.common.Authorization = `Bearer ${data.data.access_token}`
-    router.push('/')
-  },
-})
+// const { loading, error, run } = useRequest(() => axios.post('/login', formValue.value), {
+//   manual: true,
+//   onSuccess: (data) => {
+//     localStorage.setItem('access_token', data.data.access_token)
+//     axios.defaults.headers.common.Authorization = `Bearer ${data.data.access_token}`
+//     router.push('/')
+//   },
+// })
+
+function run() {
+  router.push('/')
+}
 </script>
 
 <template>
