@@ -32,9 +32,9 @@ const { loading, error, run } = useRequest(() => axios.post('/voucher', formValu
         <n-form-item label="Expiry date">
           <n-date-picker v-model:formatted-value="formValue.expiry_date" placeholder="" type="date" value-format="yyyy-MM-dd" />
         </n-form-item>
-        <div class="flex justify-end">
+        <div class="flex">
           <n-button :loading="loading" type="primary" @click="run">
-            Add
+            Add voucher
           </n-button>
         </div>
       </n-form>
