@@ -40,7 +40,7 @@ function handleLogout() {
         Log out
       </app-header-item>
     </n-layout-header>
-    <n-layout class="!top-14 h-full" embedded position="absolute">
+    <n-layout class="!top-14" embedded position="absolute">
       <router-view v-slot="{ Component }">
         <transition name="fade">
           <component :is="Component" />

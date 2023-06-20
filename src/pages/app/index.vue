@@ -9,7 +9,8 @@ const { copy } = useClipboard()
 
 const { data, loading } = useRequest(async () => {
   const res = await axios.get('/voucher')
-  return res.data.results
+  return res.data.results.sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)),
+  )
 })
 
 const message = useMessage()
@@ -34,7 +35,7 @@ const columns: DataTableColumns = [
     key: 'created_at',
     title: 'Created at',
     // Truncate to 10 characters
-    render: row => row.created_at.slice(0, 10),
+    render: row => dayjs(row.created_at).format('YYYY-MM-DD h:mm A'),
   },
   {
     key: 'expiry_date',
