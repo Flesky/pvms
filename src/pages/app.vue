@@ -33,12 +33,12 @@ function handleLogout() {
         <img class="w-24 object-contain" src="/pivotel-logo.png">
         <app-menu />
       </div>
-      <n-button
-        type="tertiary"
+      <app-header-item
+        class="text-white"
         @click="handleLogout"
       >
         Log out
-      </n-button>
+      </app-header-item>
     </n-layout-header>
     <n-layout class="!top-14 h-full" embedded position="absolute">
       <router-view v-slot="{ Component }">
