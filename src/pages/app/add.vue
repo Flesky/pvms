@@ -27,7 +27,7 @@ const { loading, error, run } = useRequest(() => axios.post('/voucher', formValu
     <n-card title="Add voucher">
       <n-form label-placement="left" :label-width="150">
         <n-form-item label="Value">
-          <n-select v-model:value="formValue.value" filterable :options="valueOptions" placeholder="" tag />
+          <n-select v-model:value="formValue.value" class="max-w-xs" filterable :options="valueOptions" placeholder="" tag />
         </n-form-item>
         <n-form-item label="Expiry date">
           <n-date-picker v-model:formatted-value="formValue.expiry_date" placeholder="" type="date" value-format="yyyy-MM-dd" />
