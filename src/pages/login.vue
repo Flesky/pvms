@@ -7,6 +7,7 @@ const { loading, error, run } = useRequest(() => axios.post('/login', formValue.
   manual: true,
   onSuccess: (data) => {
     localStorage.setItem('access_token', data.data.access_token)
+    axios.defaults.headers.common.Authorization = `Bearer ${data.data.access_token}`
     router.push('/')
   },
 })
