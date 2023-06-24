@@ -7,13 +7,18 @@ definePage({
 
 const { copy } = useClipboard()
 
-const { data, loading } = useRequest(async () => {
+const { data, loading, refresh } = useRequest(async () => {
   const res = await axios.get('/voucher')
   return res.data.results.sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)),
   )
 })
 
 const message = useMessage()
+const selected = reactive({
+  voucher_code: null,
+  show: false,
+  title: '',
+})
 
 const columns: DataTableColumns = [
   {
@@ -33,7 +38,7 @@ const columns: DataTableColumns = [
   },
   {
     key: 'created_at',
-    title: 'Created at',
+    title: 'Creation Date',
     // Truncate to 10 characters
     render: row => dayjs(row.created_at).format('YYYY-MM-DD h:mm A'),
   },
@@ -57,7 +62,7 @@ const columns: DataTableColumns = [
     title: 'Action',
     render: row => <n-button type="primary"
     onClick={() => {
-      selected.id = row.id
+      selected.voucher_code = row.voucher_code
       selected.show = true
       selected.title = `Edit voucher - ${row.voucher_code}`
       formValue.value = row
@@ -68,12 +73,6 @@ const columns: DataTableColumns = [
 const pagination: PaginationProps = {
   pageSize: 10,
 }
-
-const selected = reactive({
-  id: null,
-  show: false,
-  title: '',
-})
 
 const selection = ref([])
 
@@ -86,13 +85,31 @@ const valueOptions = [
   { label: '500', value: 500 },
   { label: '1000', value: 1000 },
 ]
+
+const query = ref('')
+const filteredData = computed(() => data.value?.filter(row => Object.values(row).some(value => String(value).includes(query.value))))
+
+const { loading: editing, run: edit } = useRequest(async () => {
+  const res = await axios.put(`/voucher/${selected.voucher_code}`, formValue.value)
+  return res.data
+}, {
+  manual: true,
+  onSuccess: () => {
+    message.success('Voucher updated')
+    refresh()
+    selected.show = false
+  },
+})
 </script>
 
 <template>
   <div class="w-full p-4">
     <n-card title="Vouchers">
+      <template #header-extra>
+        <n-input v-model:value="query" placeholder="Search" />
+      </template>
       <n-scrollbar x-scrollable>
-        <n-data-table v-bind="{ data, loading, columns, pagination }" :checked-row-keys="selection" class="min-w-max" :row-key="row => row.voucher_code" @update:checked-row-keys="keys => selection = keys" />
+        <n-data-table v-bind="{ data: filteredData, loading, columns, pagination }" :checked-row-keys="selection" class="min-w-max" :row-key="row => row.voucher_code" @update:checked-row-keys="keys => selection = keys" />
       </n-scrollbar>
     </n-card>
     <n-modal v-model:show="selected.show" class="max-w-screen-sm" preset="card" size="small" :title="selected.title">
@@ -104,7 +121,7 @@ const valueOptions = [
           <n-date-picker v-model:formatted-value="formValue.expiry_date" placeholder="" type="date" value-format="yyyy-MM-dd" />
         </n-form-item>
         <div class="flex justify-end">
-          <n-button :loading="loading" type="primary">
+          <n-button :loading="editing" type="primary" @click="edit">
             Save
           </n-button>
         </div>

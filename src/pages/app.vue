@@ -7,13 +7,19 @@ definePage({
 })
 
 const router = useRouter()
+const message = useMessage()
 
 axios.interceptors.response.use(
   response => response,
   (error) => {
-    if (error.response.status === 401) {
-      localStorage.removeItem('access_token')
-      router.push('/login')
+    switch (error.response.status) {
+      case 401:
+        localStorage.removeItem('access_token')
+        router.push('/login')
+        break
+      case 422:
+        Object.values(error.response.data.errors).forEach(errors => errors.forEach(error => message.error(error)))
+        break
     }
 
     return Promise.reject(error)
