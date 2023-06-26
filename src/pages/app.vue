@@ -13,12 +13,13 @@ axios.interceptors.response.use(
   response => response,
   (error) => {
     switch (error.response.status) {
+      case 400:
+      case 422:
+        Object.values(error.response.data.errors).forEach(errors => errors.forEach(error => message.error(error)))
+        break
       case 401:
         localStorage.removeItem('access_token')
         router.push('/login')
-        break
-      case 422:
-        Object.values(error.response.data.errors).forEach(errors => errors.forEach(error => message.error(error)))
         break
     }
 
