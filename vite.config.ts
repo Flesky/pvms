@@ -61,6 +61,9 @@ export default defineConfig({
           'vue-request': [
             'useRequest',
           ],
+          '@vueuse/integrations': [
+            'useCookies',
+          ],
         },
       ],
       vueTemplate: true,

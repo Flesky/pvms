@@ -1,5 +1,6 @@
 <script setup lang="tsx">
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
+import type { RowKey } from 'naive-ui/lib/data-table/src/interface'
 
 definePage({
   name: 'Home',
@@ -32,8 +33,8 @@ const selected = reactive({
   title: '',
 })
 
-const selection = ref([])
-const formValue = ref({})
+const selection = ref<RowKey[]>([])
+const formValue = ref<Record<string, any>>({})
 
 const { loading: editing, run: edit } = useRequest(() =>
   axios.put(`/voucher/${selected.voucher_code}`, formValue.value), {
@@ -45,14 +46,24 @@ const { loading: editing, run: edit } = useRequest(() =>
   },
 })
 
-// Call '/voucher-set-inactive/:voucher_code' endpoint
-const { run: deactivate } = useRequest(voucher_code =>
-  axios.put(`/voucher-set-inactive/${voucher_code}`), {
+const { loading: batchActivating, run: batchActivate } = useRequest(() =>
+  axios.post('/voucher-mass-active', { voucher_code: selection.value }), {
   manual: true,
   onSuccess: () => {
-    message.success('Voucher deactivated')
+    selection.value = []
+    message.success('Voucher/s activated')
     refresh()
-    selected.show = false
+  },
+})
+
+// Mass deactivate
+const { loading: batchDeactivating, run: batchDeactivate } = useRequest(() =>
+  axios.post('/voucher-mass-inactive', { voucher_code: selection.value }), {
+  manual: true,
+  onSuccess: () => {
+    selection.value = []
+    message.success('Voucher/s deactivated')
+    refresh()
   },
 })
 
@@ -96,12 +107,17 @@ const columns: DataTableColumns<Voucher> = [
   {
     key: 'action',
     title: 'Action',
-    render: row => <n-space size="small">
-      {row.status === 'active' && <n-button
+    render: (row) => {
+      return <n-space size="small">
+      {(row.status === 'active' || row.status === 'inactive')
+        && <n-button
           onClick={() => {
-            deactivate(row.voucher_code)
-          }}>Deactivate
-      </n-button>
+            const url = row.status === 'active' ? `/voucher-set-inactive/${row.voucher_code}` : `/voucher-set-active/${row.voucher_code}`
+            axios.put(url).then(() => {
+              message.success('Voucher deactivated')
+              refresh()
+            })
+          }}>{ row.status === 'active' ? 'Deactivate' : 'Activate'}</n-button>
       }
       <n-button
         onClick={() => {
@@ -110,7 +126,8 @@ const columns: DataTableColumns<Voucher> = [
           selected.title = `Edit voucher - ${row.voucher_code}`
           formValue.value = row
         }}>Edit</n-button>
-    </n-space>,
+    </n-space>
+    },
   },
 ]
 
@@ -127,7 +144,7 @@ const valueOptions = [
 ]
 
 const query = ref('')
-const filteredData = computed(() => data.value?.filter(row => Object.values(row).some(value => String(value).includes(query.value))))
+const filteredData = computed(() => data.value?.filter(row => Object.values(row).some(value => String(value).toLowerCase().includes(query.value.toLowerCase()))))
 </script>
 
 <template>
@@ -136,11 +153,27 @@ const filteredData = computed(() => data.value?.filter(row => Object.values(row)
       <template #header-extra>
         <n-input v-model:value="query" placeholder="Search" />
       </template>
+      <n-card class="mb-2" size="small">
+        <template #action>
+          <div class="flex items-center justify-between">
+            <div>{{ selection.length }} voucher{{ selection.length !== 1 ? 's' : undefined }} selected</div>
+
+            <n-space>
+              <n-button :disabled="!selection.length" :loading="batchActivating" @click="batchActivate">
+                Activate
+              </n-button>
+              <n-button :disabled="!selection.length" :loading="batchDeactivating" @click="batchDeactivate">
+                Deactivate
+              </n-button>
+            </n-space>
+          </div>
+        </template>
+      </n-card>
       <n-scrollbar x-scrollable>
         <n-data-table v-bind="{ data: filteredData, loading, columns, pagination }" :checked-row-keys="selection" class="min-w-max" :row-key="row => row.voucher_code" @update:checked-row-keys="keys => selection = keys" />
       </n-scrollbar>
     </n-card>
-    <n-modal v-model:show="selected.show" class="max-w-screen-sm" preset="card" size="small" :title="selected.title">
+    <n-modal v-model:show="selected.show" class="max-w-screen-sm" preset="card" segmented size="small" :title="selected.title">
       <n-form :label-width="150">
         <n-form-item label="Value">
           <n-select v-model:value="formValue.value" filterable :options="valueOptions" placeholder="" tag />
@@ -148,12 +181,14 @@ const filteredData = computed(() => data.value?.filter(row => Object.values(row)
         <n-form-item label="Expiry date">
           <n-date-picker v-model:formatted-value="formValue.expiry_date" placeholder="" type="date" value-format="yyyy-MM-dd" />
         </n-form-item>
+      </n-form>
+      <template #action>
         <div class="flex justify-end">
           <n-button :loading="editing" type="primary" @click="edit">
             Save
           </n-button>
         </div>
-      </n-form>
+      </template>
     </n-modal>
   </div>
 </template>

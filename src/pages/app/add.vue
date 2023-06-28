@@ -3,7 +3,9 @@ definePage({
   name: 'Add',
 })
 
-const formValue = ref({})
+const formValue = ref({
+  voucher_count: 1,
+})
 const valueOptions = [
   { label: '100', value: 100 },
   { label: '200', value: 200 },
