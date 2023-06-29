@@ -97,7 +97,9 @@ const columns: DataTableColumns<Voucher> = [
   {
     key: 'status',
     title: 'Status',
-    render: row => <n-tag>{row.status}</n-tag>,
+    // render: row => <n-tag>{row.status}</n-tag>,
+    // Capitalize first letter
+    render: row => <n-tag>{row.status.charAt(0).toUpperCase() + row.status.slice(1)}</n-tag>,
   },
   {
     key: 'service_reference',
@@ -108,26 +110,28 @@ const columns: DataTableColumns<Voucher> = [
     key: 'action',
     title: 'Action',
     render: (row) => {
-      return <n-space size="small">
-      {(row.status === 'active' || row.status === 'inactive')
-        && <n-button
+      return (row.status === 'active' || row.status === 'inactive')
+      && <n-button
           onClick={() => {
             const url = row.status === 'active' ? `/voucher-set-inactive/${row.voucher_code}` : `/voucher-set-active/${row.voucher_code}`
             axios.put(url).then(() => {
               message.success('Voucher deactivated')
               refresh()
             })
-          }}>{ row.status === 'active' ? 'Deactivate' : 'Activate'}</n-button>
-      }
-      <n-button
-        onClick={() => {
-          selected.voucher_code = row.voucher_code
-          selected.show = true
-          selected.title = `Edit voucher - ${row.voucher_code}`
-          formValue.value = row
-        }}>Edit</n-button>
-    </n-space>
+          }}>{row.status === 'active' ? 'Deactivate' : 'Activate'}</n-button>
     },
+  },
+  {
+    key: 'edit',
+    title: 'Edit',
+    render: row =>
+        <n-button
+            onClick={() => {
+              selected.voucher_code = row.voucher_code
+              selected.show = true
+              selected.title = `Edit voucher - ${row.voucher_code}`
+              formValue.value = row
+            }}>Edit</n-button>,
   },
 ]
 
