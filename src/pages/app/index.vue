@@ -35,8 +35,9 @@ const { data, loading, refresh } = useRequest<Voucher[]>(async () => {
   )
 })
 
-const { loading: editing, run: edit } = useRequest(() =>
-  axios.put(`/voucher/${selected.voucher_code}`, formValue.value), {
+const { loading: editing, run: edit } = useRequest(() => {
+  return axios.put(`/voucher/${selected.voucher_code}`, formValue.value)
+}, {
   manual: true,
   onSuccess: () => {
     message.success('Voucher updated')
