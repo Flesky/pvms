@@ -1,12 +1,13 @@
 <script setup lang="tsx">
-import type { DataTableColumns, PaginationProps } from 'naive-ui'
+import type { DataTableColumns } from 'naive-ui'
 import type { RowKey } from 'naive-ui/lib/data-table/src/interface'
+import type { FormSchema } from '@/components/app/form/types'
 
 definePage({
   name: 'Home',
 })
 
-export interface Voucher {
+interface Voucher {
   id: number
   voucher_code: string
   value: number
@@ -19,22 +20,20 @@ export interface Voucher {
 }
 
 const { copy } = useClipboard()
-
-const { data, loading, refresh } = useRequest<Voucher[]>(async () => {
-  const res = await axios.get('/voucher')
-  return res.data.results.sort((a: Voucher, b: Voucher) => String(b.created_at).localeCompare(String(a.created_at)),
-  )
-})
-
+const formValue = ref<Record<string, any>>({})
 const message = useMessage()
+const selection = ref<RowKey[]>([])
 const selected = reactive({
   voucher_code: '',
   show: false,
   title: '',
 })
 
-const selection = ref<RowKey[]>([])
-const formValue = ref<Record<string, any>>({})
+const { data, loading, refresh } = useRequest<Voucher[]>(async () => {
+  const res = await axios.get('/voucher')
+  return res.data.results.sort((a: Voucher, b: Voucher) => String(b.created_at).localeCompare(String(a.created_at)),
+  )
+})
 
 const { loading: editing, run: edit } = useRequest(() =>
   axios.put(`/voucher/${selected.voucher_code}`, formValue.value), {
@@ -56,7 +55,6 @@ const { loading: batchActivating, run: batchActivate } = useRequest(() =>
   },
 })
 
-// Mass deactivate
 const { loading: batchDeactivating, run: batchDeactivate } = useRequest(() =>
   axios.post('/voucher-mass-inactive', { voucher_code: selection.value }), {
   manual: true,
@@ -82,11 +80,11 @@ const columns: DataTableColumns<Voucher> = [
   {
     key: 'value',
     title: 'Value',
+    sorter: (a, b) => a.value - b.value,
   },
   {
     key: 'created_at',
     title: 'Creation Date',
-    // Truncate to 10 characters
     render: row => dayjs(row.created_at).format('YYYY-MM-DD h:mm A'),
   },
   {
@@ -97,8 +95,6 @@ const columns: DataTableColumns<Voucher> = [
   {
     key: 'status',
     title: 'Status',
-    // render: row => <n-tag>{row.status}</n-tag>,
-    // Capitalize first letter
     render: row => <n-tag>{row.status.charAt(0).toUpperCase() + row.status.slice(1)}</n-tag>,
   },
   {
@@ -109,54 +105,54 @@ const columns: DataTableColumns<Voucher> = [
   {
     key: 'action',
     title: 'Action',
+    sorter: false,
     render: (row) => {
-      return (row.status === 'active' || row.status === 'inactive')
-      && <n-button
+      if (row.status === 'active' || row.status === 'inactive') {
+        const url = `/voucher-set-${row.status === 'active' ? 'inactive' : 'active'}/${row.voucher_code}`
+        return <n-button
           onClick={() => {
-            const url = row.status === 'active' ? `/voucher-set-inactive/${row.voucher_code}` : `/voucher-set-active/${row.voucher_code}`
             axios.put(url).then(() => {
               message.success('Voucher deactivated')
               refresh()
             })
           }}>{row.status === 'active' ? 'Deactivate' : 'Activate'}</n-button>
+      }
     },
   },
   {
     key: 'edit',
     title: 'Edit',
+    sorter: false,
     render: row =>
-        <n-button
-            onClick={() => {
-              selected.voucher_code = row.voucher_code
-              selected.show = true
-              selected.title = `Edit voucher - ${row.voucher_code}`
-              formValue.value = row
-            }}>Edit</n-button>,
+      <n-button onClick={() => {
+        selected.show = true
+        selected.title = `Edit voucher - ${row.voucher_code}`
+        formValue.value = row
+      }}>Edit</n-button>,
   },
 ]
 
-const pagination: PaginationProps = {
-  pageSize: 10,
+const schema: FormSchema = {
+  value: {
+    type: 'select',
+    label: 'Value',
+    custom: true,
+    options: ['100', '200', '300', '400', '500', '1000'].map(value => ({ label: value, value })),
+  },
+  expiry_date: {
+    type: 'date',
+    label: 'Expiration Date',
+  },
+  service_reference: {
+    type: 'input',
+    label: 'Service Reference',
+  },
 }
-const valueOptions = [
-  { label: '100', value: 100 },
-  { label: '200', value: 200 },
-  { label: '300', value: 300 },
-  { label: '400', value: 400 },
-  { label: '500', value: 500 },
-  { label: '1000', value: 1000 },
-]
-
-const query = ref('')
-const filteredData = computed(() => data.value?.filter(row => Object.values(row).some(value => String(value).toLowerCase().includes(query.value.toLowerCase()))))
 </script>
 
 <template>
   <div class="w-full p-4">
-    <n-card title="Vouchers">
-      <template #header-extra>
-        <n-input v-model:value="query" placeholder="Search" />
-      </template>
+    <app-data-table v-model:selection="selection" row-key="voucher_code" title="Vouchers" v-bind="{ data, columns, loading }">
       <n-card class="mb-2" size="small">
         <template #action>
           <div class="flex items-center justify-between">
@@ -173,19 +169,13 @@ const filteredData = computed(() => data.value?.filter(row => Object.values(row)
           </div>
         </template>
       </n-card>
-      <n-scrollbar x-scrollable>
-        <n-data-table v-bind="{ data: filteredData, loading, columns, pagination }" :checked-row-keys="selection" class="min-w-max" :row-key="row => row.voucher_code" @update:checked-row-keys="keys => selection = keys" />
-      </n-scrollbar>
-    </n-card>
-    <n-modal v-model:show="selected.show" class="max-w-screen-sm" preset="card" segmented size="small" :title="selected.title">
-      <n-form :label-width="150">
-        <n-form-item label="Value">
-          <n-select v-model:value="formValue.value" filterable :options="valueOptions" placeholder="" tag />
-        </n-form-item>
-        <n-form-item label="Expiry date">
-          <n-date-picker v-model:formatted-value="formValue.expiry_date" placeholder="" type="date" value-format="yyyy-MM-dd" />
-        </n-form-item>
-      </n-form>
+    </app-data-table>
+
+    <app-modal v-model:show="selected.show" :title="selected.title">
+      <app-form :label-width="150" :model="formValue">
+        <app-form-items v-model="formValue" :schema="schema" />
+      </app-form>
+
       <template #action>
         <div class="flex justify-end">
           <n-button :loading="editing" type="primary" @click="edit">
@@ -193,6 +183,6 @@ const filteredData = computed(() => data.value?.filter(row => Object.values(row)
           </n-button>
         </div>
       </template>
-    </n-modal>
+    </app-modal>
   </div>
 </template>

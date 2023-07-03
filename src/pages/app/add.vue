@@ -1,29 +1,49 @@
 <script setup lang="tsx">
+import type { FormSchema } from '@/components/app/form/types'
+
 definePage({
   name: 'Add',
 })
 
+const feedback = ref()
+const fileList = ref([])
+const message = useMessage()
 const formValue = ref({
   voucher_count: 1,
 })
-const valueOptions = [
-  { label: '100', value: 100 },
-  { label: '200', value: 200 },
-  { label: '300', value: 300 },
-  { label: '400', value: 400 },
-  { label: '500', value: 500 },
-  { label: '1000', value: 1000 },
-]
 
-const message = useMessage()
+const schema: FormSchema = {
+  value: {
+    type: 'select',
+    label: 'Value',
+    custom: true,
+    options: ['100', '200', '300', '400', '500', '1000'].map(value => ({ label: value, value })),
+  },
+  expiry_date: {
+    type: 'date',
+    label: 'Expiration Date',
+  },
+  count: {
+    type: 'number',
+    label: 'Count',
+    min: 1,
+    buttons: true,
+  },
+  service_reference: {
+    type: 'input',
+    label: 'Service Reference',
+  },
+}
 const { loading, error, run } = useRequest(() => axios.post('/voucher-multiple', formValue.value), {
   manual: true,
   onSuccess: () => {
     message.success('Voucher added')
   },
+  onError: (err) => {
+    console.log(err)
+  },
 })
 
-const fileList = ref([])
 const { loading: uploading, run: upload } = useRequest(() => {
   const formData = new FormData()
   formData.append('file', fileList.value[0].file)
@@ -41,23 +61,15 @@ const { loading: uploading, run: upload } = useRequest(() => {
   <div class="w-full p-4">
     <n-card header-style="padding-bottom: 8px;" title="Add voucher">
       <n-tabs size="large" type="line">
-        <n-tab-pane name="Manual Input">
-          <n-form label-placement="left" :label-width="150">
-            <n-form-item label="Value">
-              <n-select v-model:value="formValue.value" class="max-w-xs" filterable :options="valueOptions" placeholder="" tag />
-            </n-form-item>
-            <n-form-item label="Expiry date">
-              <n-date-picker v-model:formatted-value="formValue.expiry_date" placeholder="" type="date" value-format="yyyy-MM-dd" />
-            </n-form-item>
-            <n-form-item label="Count">
-              <n-input-number v-model:value="formValue.voucher_count" :default-value="1" :min="1" placeholder="" />
-            </n-form-item>
-            <div class="flex">
-              <n-button :loading="loading" type="primary" @click="run">
-                Add voucher
-              </n-button>
-            </div>
-          </n-form>
+        <n-tab-pane class="max-w-lg" name="Manual Input">
+          <app-form :label-width="150" :model="formValue">
+            <app-form-items v-model="formValue" :feedback="feedback" :schema="schema" />
+          </app-form>
+          <div class="flex">
+            <n-button :loading="loading" type="primary" @click="run">
+              Add voucher
+            </n-button>
+          </div>
         </n-tab-pane>
 
         <n-tab-pane name="File Upload">
@@ -75,7 +87,7 @@ const { loading: uploading, run: upload } = useRequest(() => {
                 </n-text>
               </n-upload-dragger>
             </n-upload>
-            <n-collapse-transition :collapsed="!!fileList.length">
+            <n-collapse-transition :show="!!fileList.length">
               <n-button :loading="uploading" type="primary" @click="upload">
                 Upload
               </n-button>

@@ -9,17 +9,10 @@ const themeOverrides: GlobalThemeOverrides = {
     primaryColorSuppl: '#a24ab2',
   },
 }
-
-axios.defaults.baseURL = import.meta.env.VITE_API_URL
-const accessToken = useLocalStorage('access_token', undefined)
-axios.defaults.headers.common.Authorization = `Bearer ${accessToken.value}`
-
-const { push } = useRouter()
-push('/login')
 </script>
 
 <template>
-  <n-config-provider abstract v-bind="{ themeOverrides }">
+  <n-config-provider v-bind="{ themeOverrides }">
     <n-loading-bar-provider>
       <n-dialog-provider>
         <n-notification-provider>
@@ -31,9 +24,3 @@ push('/login')
     </n-loading-bar-provider>
   </n-config-provider>
 </template>
-
-<style>
-html, body, #app {
-  @apply h-full
-}
-</style>
