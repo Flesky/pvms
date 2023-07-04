@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import type { DataTableColumns } from 'naive-ui'
+import type { DataTableColumns, PaginationProps } from 'naive-ui'
 
 definePage({
   name: 'History',
@@ -44,21 +44,42 @@ const nestedColumns: DataTableColumns = [
     render: row => dayjs(row.created_at).format('YYYY-MM-DD h:mm A'),
   },
 ]
+const nestedPagination: PaginationProps = {
+
+}
+const nestedDataTableProps = {
+  cardSize: 'small',
+  columns: nestedColumns,
+  title: ' ',
+  paginateSinglePage: false,
+}
 
 const columns: DataTableColumns = [
   {
     type: 'expand',
     renderExpand: (row) => {
-      return <app-data-table title="Data" columns={nestedColumns} data={JSON.parse(row.voucher_new_data)}></app-data-table>
+      if (row.voucher_old_data) {
+        return <n-tabs class="-mt-2">
+          <n-tab-pane name="New data">
+            <app-data-table {...nestedDataTableProps} data={JSON.parse(row.voucher_new_data)}/>
+          </n-tab-pane>
+          <n-tab-pane name="Old data">
+            <app-data-table {...nestedDataTableProps} data={JSON.parse(row.voucher_old_data)}/>
+          </n-tab-pane>
+        </n-tabs>
+      }
+      else {
+        return <app-data-table {...nestedDataTableProps} data={JSON.parse(row.voucher_new_data)}/>
+      }
     },
-  },
-  {
-    key: 'user_id',
-    title: 'User ID',
   },
   {
     key: 'transaction',
     title: 'Transaction',
+  },
+  {
+    key: 'user_id',
+    title: 'User ID',
   },
   {
     key: 'created_at',
@@ -72,10 +93,6 @@ const selection = ref([])
 
 <template>
   <div class="w-full p-4">
-    <n-card title="History">
-      <n-scrollbar x-scrollable>
-        <n-data-table v-bind="{ data, columns, loading }" :checked-row-keys="selection" class="min-w-max" :row-key="row => row.id" @update:checked-row-keys="keys => selection = keys" />
-      </n-scrollbar>
-    </n-card>
+    <app-data-table row-key="id" title="History" v-bind="{ data, columns, loading }" />
   </div>
 </template>

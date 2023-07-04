@@ -23,7 +23,7 @@ const schema: FormSchema = {
     type: 'date',
     label: 'Expiration Date',
   },
-  count: {
+  voucher_count: {
     type: 'number',
     label: 'Count',
     min: 1,
@@ -34,13 +34,10 @@ const schema: FormSchema = {
     label: 'Service Reference',
   },
 }
-const { loading, error, run } = useRequest(() => axios.post('/voucher-multiple', formValue.value), {
+const { loading, error, run } = useRequest(() => axios.post(formValue.value.voucher_count === 1 ? '/voucher' : '/voucher-multiple', formValue.value), {
   manual: true,
   onSuccess: () => {
     message.success('Voucher added')
-  },
-  onError: (err) => {
-    console.log(err)
   },
 })
 

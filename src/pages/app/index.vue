@@ -7,7 +7,7 @@ definePage({
   name: 'Home',
 })
 
-interface Voucher {
+export interface Voucher {
   id: number
   voucher_code: string
   value: number
@@ -35,7 +35,7 @@ const { data, loading, refresh } = useRequest<Voucher[]>(async () => {
   )
 })
 
-const { loading: editing, run: edit } = useRequest(() => {
+const { loading: editing, run: edit } = useRequest(async () => {
   return axios.put(`/voucher/${selected.voucher_code}`, formValue.value)
 }, {
   manual: true,
@@ -126,6 +126,7 @@ const columns: DataTableColumns<Voucher> = [
     sorter: false,
     render: row =>
       <n-button onClick={() => {
+        selected.voucher_code = row.voucher_code
         selected.show = true
         selected.title = `Edit voucher - ${row.voucher_code}`
         formValue.value = row
