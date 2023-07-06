@@ -107,31 +107,39 @@ const columns: DataTableColumns<Voucher> = [
     key: 'action',
     title: 'Action',
     sorter: false,
+    titleAlign: 'center',
     render: (row) => {
-      if (row.status === 'active' || row.status === 'inactive') {
-        const url = `/voucher-set-${row.status === 'active' ? 'inactive' : 'active'}/${row.voucher_code}`
-        return <n-button
-          onClick={() => {
-            axios.put(url).then(() => {
-              message.success('Voucher deactivated')
-              refresh()
-            })
-          }}>{row.status === 'active' ? 'Deactivate' : 'Activate'}</n-button>
-      }
+      const url = `/voucher-set-${row.status === 'active' ? 'inactive' : 'active'}/${row.voucher_code}`
+      return <n-space size="large" justify="space-between">
+        {(row.status === 'active' || row.status === 'inactive') && <n-button disabled={selection.value.length}
+            onClick={() => {
+              axios.put(url).then(() => {
+                message.success('Voucher deactivated')
+                refresh()
+              })
+            }}>{row.status === 'active' ? 'Deactivate' : 'Activate'}</n-button>}
+
+        <n-button disabled={selection.value.length} onClick={() => {
+          selected.voucher_code = row.voucher_code
+          selected.show = true
+          selected.title = `Edit voucher - ${row.voucher_code}`
+          formValue.value = row
+        }}>Edit</n-button>
+      </n-space>
     },
   },
-  {
-    key: 'edit',
-    title: 'Edit',
-    sorter: false,
-    render: row =>
-      <n-button onClick={() => {
-        selected.voucher_code = row.voucher_code
-        selected.show = true
-        selected.title = `Edit voucher - ${row.voucher_code}`
-        formValue.value = row
-      }}>Edit</n-button>,
-  },
+  // {
+  //   key: 'edit',
+  //   title: 'Edit',
+  //   sorter: false,
+  //   render: row =>
+  //     <n-button onClick={() => {
+  //       selected.voucher_code = row.voucher_code
+  //       selected.show = true
+  //       selected.title = `Edit voucher - ${row.voucher_code}`
+  //       formValue.value = row
+  //     }}>Edit</n-button>,
+  // },
 ]
 
 const schema: FormSchema = {
