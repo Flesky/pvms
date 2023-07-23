@@ -30,8 +30,28 @@ const schema: FormSchema = {
     buttons: true,
   },
   service_reference: {
-    type: 'input',
+    type: 'number',
     label: 'Service Reference',
+  },
+  IMEI: {
+    type: 'input',
+    label: 'IMEI',
+  },
+  PCN: {
+    type: 'input',
+    label: 'PCN',
+  },
+  sim_number: {
+    type: 'input',
+    label: 'SIM Number',
+  },
+  IMSI: {
+    type: 'input',
+    label: 'IMSI',
+  },
+  PUK: {
+    type: 'input',
+    label: 'PUK',
   },
 }
 const { loading, error, run } = useRequest(() => axios.post(formValue.value.voucher_count === 1 ? '/voucher' : '/voucher-multiple', formValue.value), {

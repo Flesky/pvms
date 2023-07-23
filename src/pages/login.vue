@@ -34,7 +34,7 @@ function run() {
             <n-input v-model:value="formValue.password" disabled placeholder="" type="password" />
           </n-form-item>
         </n-form>
-        <n-button v-bind="{ loading }" block type="primary" @click="run">
+        <n-button block type="primary" @click="run">
           Log in
         </n-button>
       </n-card>

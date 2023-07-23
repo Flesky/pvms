@@ -14,6 +14,11 @@ export interface Voucher {
   expiry_date: string
   status: string
   service_reference?: string
+  IMEI?: string
+  PCN?: string
+  sim_number?: string
+  IMSI?: string
+  PUK?: string
   created_by: number
   created_at: string
   updated_at: string
@@ -22,12 +27,12 @@ export interface Voucher {
 const { copy } = useClipboard()
 const formValue = ref<Record<string, any>>({})
 const message = useMessage()
-const selection = ref<RowKey[]>([])
 const selected = reactive({
   voucher_code: '',
   show: false,
   title: '',
 })
+const selection = ref<RowKey[]>([])
 
 const { data, loading, refresh } = useRequest<Voucher[]>(async () => {
   const res = await axios.get('/voucher')
@@ -96,12 +101,37 @@ const columns: DataTableColumns<Voucher> = [
   {
     key: 'status',
     title: 'Status',
-    render: row => <n-tag>{row.status.charAt(0).toUpperCase() + row.status.slice(1)}</n-tag>,
+    render: row => <n-tag type={row.status === 'active' ? 'success' : 'default'}>{row.status.charAt(0).toUpperCase() + row.status.slice(1)}</n-tag>,
   },
   {
     key: 'service_reference',
     title: 'Service Reference',
     render: row => row.service_reference || 'N/A',
+  },
+  {
+    key: 'IMEI',
+    title: 'IMEI',
+    render: row => row.IMEI || 'N/A',
+  },
+  {
+    key: 'PCN',
+    title: 'PCN',
+    render: row => row.PCN || 'N/A',
+  },
+  {
+    key: 'sim_number',
+    title: 'SIM Number',
+    render: row => row.sim_number || 'N/A',
+  },
+  {
+    key: 'IMSI',
+    title: 'IMSI',
+    render: row => row.IMSI || 'N/A',
+  },
+  {
+    key: 'PUK',
+    title: 'PUK',
+    render: row => row.PUK || 'N/A',
   },
   {
     key: 'action',
@@ -110,8 +140,8 @@ const columns: DataTableColumns<Voucher> = [
     titleAlign: 'center',
     render: (row) => {
       const url = `/voucher-set-${row.status === 'active' ? 'inactive' : 'active'}/${row.voucher_code}`
-      return <n-space size="large" justify="space-between">
-        {(row.status === 'active' || row.status === 'inactive') && <n-button disabled={selection.value.length}
+      return <n-space>
+        {(row.status === 'active' || row.status === 'inactive') && <n-button class="!w-24" disabled={!!selection.value.length}
             onClick={() => {
               axios.put(url).then(() => {
                 message.success('Voucher deactivated')
@@ -119,7 +149,7 @@ const columns: DataTableColumns<Voucher> = [
               })
             }}>{row.status === 'active' ? 'Deactivate' : 'Activate'}</n-button>}
 
-        <n-button disabled={selection.value.length} onClick={() => {
+        <n-button disabled={!!selection.value.length} onClick={() => {
           selected.voucher_code = row.voucher_code
           selected.show = true
           selected.title = `Edit voucher - ${row.voucher_code}`
@@ -154,31 +184,45 @@ const schema: FormSchema = {
     label: 'Expiration Date',
   },
   service_reference: {
-    type: 'input',
+    type: 'number',
     label: 'Service Reference',
+  },
+  IMEI: {
+    type: 'input',
+    label: 'IMEI',
+  },
+  PCN: {
+    type: 'input',
+    label: 'PCN',
+  },
+  sim_number: {
+    type: 'input',
+    label: 'SIM Number',
+  },
+  IMSI: {
+    type: 'input',
+    label: 'IMSI',
+  },
+  PUK: {
+    type: 'input',
+    label: 'PUK',
   },
 }
 </script>
 
 <template>
   <div class="w-full p-4">
-    <app-data-table v-model:selection="selection" row-key="voucher_code" title="Vouchers" v-bind="{ data, columns, loading }">
-      <n-card class="mb-2" size="small">
-        <template #action>
-          <div class="flex items-center justify-between">
-            <div>{{ selection.length }} voucher{{ selection.length !== 1 ? 's' : undefined }} selected</div>
-
-            <n-space>
-              <n-button :disabled="!selection.length" :loading="batchActivating" @click="batchActivate">
-                Activate
-              </n-button>
-              <n-button :disabled="!selection.length" :loading="batchDeactivating" @click="batchDeactivate">
-                Deactivate
-              </n-button>
-            </n-space>
-          </div>
-        </template>
-      </n-card>
+    <app-data-table id="vouchers" v-bind="{ data, columns, loading, refresh }" v-model:selection="selection" :row-key="row => row.voucher_code" title="Vouchers">
+      <template #selectionAction="{ selection }">
+        <n-space>
+          <n-button :disabled="!selection.length" :loading="batchActivating" @click="batchActivate">
+            Activate
+          </n-button>
+          <n-button :disabled="!selection.length" :loading="batchDeactivating" @click="batchDeactivate">
+            Deactivate
+          </n-button>
+        </n-space>
+      </template>
     </app-data-table>
 
     <app-modal v-model:show="selected.show" :title="selected.title">

@@ -40,7 +40,7 @@ const nestedColumns: DataTableColumns = [
   },
   {
     key: 'created_at',
-    title: 'Created At',
+    title: 'Created On',
     render: row => dayjs(row.created_at).format('YYYY-MM-DD h:mm A'),
   },
 ]
@@ -61,15 +61,15 @@ const columns: DataTableColumns = [
       if (row.voucher_old_data) {
         return <n-tabs class="-mt-2">
           <n-tab-pane name="New data">
-            <app-data-table {...nestedDataTableProps} data={JSON.parse(row.voucher_new_data)}/>
+            <app-data-table id={String(row.id)} {...nestedDataTableProps} data={JSON.parse(row.voucher_new_data)}/>
           </n-tab-pane>
           <n-tab-pane name="Old data">
-            <app-data-table {...nestedDataTableProps} data={JSON.parse(row.voucher_old_data)}/>
+            <app-data-table id={String(row.id)} {...nestedDataTableProps} data={JSON.parse(row.voucher_old_data)}/>
           </n-tab-pane>
         </n-tabs>
       }
       else {
-        return <app-data-table {...nestedDataTableProps} data={JSON.parse(row.voucher_new_data)}/>
+        return <app-data-table id={String(row.id)} {...nestedDataTableProps} data={JSON.parse(row.voucher_new_data)}/>
       }
     },
   },
@@ -93,6 +93,6 @@ const selection = ref([])
 
 <template>
   <div class="w-full p-4">
-    <app-data-table row-key="id" title="History" v-bind="{ data, columns, loading }" />
+    <app-data-table id="history" :row-key="row => row.id" title="History" v-bind="{ data, columns, loading }" />
   </div>
 </template>
