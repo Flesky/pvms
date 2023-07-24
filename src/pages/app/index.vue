@@ -47,7 +47,7 @@ const schema = ref<FormSchema>({
     type: 'date',
     label: 'Expiration Date',
   },
-  product_code: {
+  product_code_reference: {
     type: 'select',
     label: 'Product Code',
     options: [],
@@ -87,7 +87,7 @@ const { data, loading, refresh } = useRequest<Voucher[]>(async () => {
   ])
 
   // Assign product_code options
-  schema.value.product_code.options = (res[1].data.results as Product[]).map((product: any) => ({
+  schema.value.product_code_reference.options = (res[1].data.results as Product[]).map((product: any) => ({
     label: product.product_code,
     value: product.product_code,
   }))
@@ -221,6 +221,7 @@ const columns: DataTableColumns<Voucher> = [
 </script>
 
 <template>
+  {{ data }}
   <div class="w-full p-4">
     <app-data-table id="vouchers" v-bind="{ data, columns, loading, refresh }" v-model:selection="selection" :row-key="row => row.voucher_code" title="Vouchers">
       <template #selectionAction="{ selection }">
