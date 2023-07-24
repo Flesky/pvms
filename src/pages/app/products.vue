@@ -76,7 +76,19 @@ const columns: DataTableColumns<Product> = [
             modal.value.title = 'Edit product'
             modal.value.id = row.id
             formValue.value = row
-          }}>Edit</n-button><n-button type="error" tertiary>Delete</n-button></n-space>,
+          }}>Edit</n-button>
+          <n-popconfirm onPositiveClick={() => {
+            axios.delete(`/product/${row.id}`).then(() => {
+              message.success('Product deleted successfully')
+              refresh()
+            })
+          }}>
+            {{
+              trigger: () => <n-button type="error" tertiary>Delete</n-button>,
+              default: () => <span>Are you sure you want to delete this product?</span>,
+            }}
+          </n-popconfirm>
+          </n-space>,
   },
 ]
 
