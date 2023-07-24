@@ -2,9 +2,14 @@
 import type { FormInst } from 'naive-ui'
 import type { FormValidateMessages } from 'naive-ui/lib/form/src/interface'
 
-defineProps<{
+interface Props {
   model: Record<string, any>
-}>()
+  showFeedback?: boolean
+}
+
+withDefaults(defineProps<Props>(), {
+  showFeedback: true,
+})
 
 const validateMessages: FormValidateMessages = {
   required: 'This field is required',
@@ -15,7 +20,9 @@ defineExpose({ form })
 </script>
 
 <template>
-  <n-form ref="form" label-align="left" label-placement="left" label-width="auto" v-bind="{ model, validateMessages }">
-    <slot />
-  </n-form>
+  <div class="@container">
+    <n-form ref="form" class="grid grid-cols-6 gap-x-2 @3xl:grid-cols-12" v-bind="{ model, validateMessages, showFeedback }">
+      <slot />
+    </n-form>
+  </div>
 </template>

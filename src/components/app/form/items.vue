@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { FormItemRule } from 'naive-ui'
+import { breakpointsTailwind } from '@vueuse/core'
 import type { FormFeedback, FormItem, FormSchema } from '@/components/app/form/types'
 
 defineProps<{
@@ -7,6 +8,14 @@ defineProps<{
   schema: FormSchema
 }>()
 const modelValue = defineModel<Record<string, any>>({ required: true })
+
+const isSm = useBreakpoints(breakpointsTailwind).smaller('md')
+function getSpan(span?: number) {
+  if (isSm && typeof span === 'number' && span > 6)
+    return 'grid-column: 1 / -1'
+
+  return `grid-column: span ${span || 6} / span ${span || 6}`
+}
 
 function getRules(item: FormItem) {
   const rules = ('rules' in item ? Array.isArray(item.rules) ? item.rules : [item.rules] : []) as FormItemRule[]
@@ -33,7 +42,13 @@ function getRules(item: FormItem) {
 
 <template>
   <template v-for="[path, item] in Object.entries(schema)" :key="path">
-    <n-form-item v-if="item.type !== 'space'" :feedback="feedback ? feedback[path] : undefined" :label="item.label" :path="path" :rule="getRules(item)" :show-label="!!item.label" :style="`grid-column: span ${item.span || 12} / span ${item.span || 12}`" :validation-status="feedback && !!feedback[path] ? 'error' : undefined">
+    <n-form-item v-if="item.type !== 'space'" :label="item.label" :path="path" :rule="getRules(item)" :show-label="!!item.label" :style="getSpan(item.span)" :validation-status="feedback && feedback[path] ? 'error' : undefined">
+      <template v-if="feedback && feedback[path]" #feedback>
+        <div v-for="(message, i) in feedback[path]" :key="i">
+          {{ message }}
+        </div>
+      </template>
+
       <n-checkbox v-if="item.type === 'checkbox'" v-model:checked="modelValue[path]" :label="item.content" />
 
       <n-date-picker v-else-if="item.type === 'date'" v-model:formatted-value="modelValue[path]" :clearable="!item.required" :placeholder="item.placeholder || 'YYYY-MM-DD'" value-format="yyyy-MM-dd" />
@@ -47,7 +62,7 @@ function getRules(item: FormItem) {
         </template>
       </n-input>
 
-      <n-input-number v-else-if="item.type === 'number'" v-model:value="modelValue[path]" :clearable="!item.required" :max="item.max" :min="item.min" :placeholder="item.placeholder || ''" :show-button="!!item.buttons">
+      <n-input-number v-else-if="item.type === 'number'" v-model:value="modelValue[path]" :clearable="!item.required" :max="item.max" :min="item.min" :placeholder="item.placeholder || ''" :show-button="item.buttons || false">
         <template v-if="item.prefix" #prefix>
           {{ item.prefix }}
         </template>
@@ -68,5 +83,7 @@ function getRules(item: FormItem) {
 
       <n-input v-else-if="item.type === 'time'" v-model:value="modelValue[path]" :clearable="!item.required" :placeholder="item.placeholder || 'eg. 12:51 PM'" />
     </n-form-item>
+
+    <div v-else :style="getSpan(item.span)" />
   </template>
 </template>

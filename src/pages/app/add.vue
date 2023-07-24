@@ -54,7 +54,8 @@ const schema: FormSchema = {
     label: 'PUK',
   },
 }
-const { loading, error, run } = useRequest(() => axios.post(formValue.value.voucher_count === 1 ? '/voucher' : '/voucher-multiple', formValue.value), {
+
+const { loading, error, run } = useRequest(() => axios.post('/voucher', formValue.value), {
   manual: true,
   onSuccess: () => {
     message.success('Voucher added')

@@ -7,8 +7,9 @@ function renderLink(to: string, label: string) {
 
 const options: MenuOption[] = [
   {
-    label: renderLink('/', 'Home'),
-    key: 'Home',
+    label: renderLink('/', 'Vouchers'),
+    key: 'Vouchers',
+    icon: () => <i-ticket />,
   },
   {
     label: renderLink('/add', 'Add Voucher'),

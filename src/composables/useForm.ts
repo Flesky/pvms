@@ -1,21 +1,23 @@
 import type { Ref } from 'vue'
 import { ref } from 'vue'
-import type { FormSchema } from '@/components/app/form/types'
+
+// import type { FormSchema } from '@/components/app/form/types'
 import type AppForm from '@/components/app/form/index.vue'
 
-interface _AppForm extends Ref<InstanceType<typeof AppForm>> {
+interface AppFormInstance extends Ref<InstanceType<typeof AppForm>> {
   validate(): void
 }
 
-export default function useForm(schema: FormSchema) {
+// schema: FormSchema
+export default function useForm() {
   // schema = Object.fromEntries(Object.entries(schema).filter(([path, item]) => item.type !== 'space'))
-  const formRef = ref<_AppForm | null>(null)
+  const formRef = ref<AppFormInstance | null>(null)
   // const defaultValue = Object.keys(schema).map(key => ({ [key]: null }))
 
   const formValue = ref<Record<string, any>>({})
   // const formValue = ref<Record<string, unknown>>(Object.assign({}, ...defaultValue))
-  const feedback = ref<Record<string, string>>({})
-  function setFeedback(record: Record<string, string>) {
+  const feedback = ref<Record<string, Array<string>>>({})
+  function setFeedback(record: Record<string, Array<string>>) {
     feedback.value = record
   }
   function resetFeedback() {

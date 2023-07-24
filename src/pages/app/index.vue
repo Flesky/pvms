@@ -2,15 +2,17 @@
 import type { DataTableColumns } from 'naive-ui'
 import type { RowKey } from 'naive-ui/lib/data-table/src/interface'
 import type { FormSchema } from '@/components/app/form/types'
+import type { Product } from '@/pages/app/products.vue'
 
 definePage({
-  name: 'Home',
+  name: 'Vouchers',
 })
 
 export interface Voucher {
   id: number
   voucher_code: string
   value: number
+  product_code: string
   expiry_date: string
   status: string
   service_reference?: string
@@ -34,10 +36,63 @@ const selected = reactive({
 })
 const selection = ref<RowKey[]>([])
 
+const schema = ref<FormSchema>({
+  value: {
+    type: 'select',
+    label: 'Value',
+    custom: true,
+    options: ['100', '200', '300', '400', '500', '1000'].map(value => ({ label: value, value })),
+  },
+  expiry_date: {
+    type: 'date',
+    label: 'Expiration Date',
+  },
+  product_code: {
+    type: 'select',
+    label: 'Product Code',
+    options: [],
+  },
+  service_reference: {
+    type: 'number',
+    label: 'Service Reference',
+  },
+  IMEI: {
+    type: 'input',
+    label: 'IMEI',
+  },
+  PCN: {
+    type: 'input',
+    label: 'PCN',
+  },
+  sim_number: {
+    type: 'input',
+    label: 'SIM Number',
+  },
+  IMSI: {
+    type: 'input',
+    label: 'IMSI',
+  },
+  PUK: {
+    type: 'input',
+    label: 'PUK',
+  },
+})
+
 const { data, loading, refresh } = useRequest<Voucher[]>(async () => {
-  const res = await axios.get('/voucher')
-  return res.data.results.sort((a: Voucher, b: Voucher) => String(b.created_at).localeCompare(String(a.created_at)),
-  )
+  // const res = await axios.get('/voucher')
+  // await axios.get('/product')
+  const res = await Promise.all([
+    axios.get('/voucher'),
+    axios.get('/product'),
+  ])
+
+  // Assign product_code options
+  schema.value.product_code.options = (res[1].data.results as Product[]).map((product: any) => ({
+    label: product.product_code,
+    value: product.product_code,
+  }))
+
+  return res[0].data.results.sort((a: Voucher, b: Voucher) => String(b.created_at).localeCompare(String(a.created_at)))
 })
 
 const { loading: editing, run: edit } = useRequest(async () => {
@@ -87,6 +142,10 @@ const columns: DataTableColumns<Voucher> = [
     key: 'value',
     title: 'Value',
     sorter: (a, b) => a.value - b.value,
+  },
+  {
+    key: 'product_code',
+    title: 'Product Code',
   },
   {
     key: 'created_at',
@@ -143,8 +202,8 @@ const columns: DataTableColumns<Voucher> = [
       return <n-space>
         {(row.status === 'active' || row.status === 'inactive') && <n-button class="!w-24" disabled={!!selection.value.length}
             onClick={() => {
-              axios.put(url).then(() => {
-                message.success('Voucher deactivated')
+              axios.patch(url).then(() => {
+                message.success(`Voucher ${row.status === 'active' ? 'deactivated' : 'activated'}`)
                 refresh()
               })
             }}>{row.status === 'active' ? 'Deactivate' : 'Activate'}</n-button>}
@@ -158,56 +217,7 @@ const columns: DataTableColumns<Voucher> = [
       </n-space>
     },
   },
-  // {
-  //   key: 'edit',
-  //   title: 'Edit',
-  //   sorter: false,
-  //   render: row =>
-  //     <n-button onClick={() => {
-  //       selected.voucher_code = row.voucher_code
-  //       selected.show = true
-  //       selected.title = `Edit voucher - ${row.voucher_code}`
-  //       formValue.value = row
-  //     }}>Edit</n-button>,
-  // },
 ]
-
-const schema: FormSchema = {
-  value: {
-    type: 'select',
-    label: 'Value',
-    custom: true,
-    options: ['100', '200', '300', '400', '500', '1000'].map(value => ({ label: value, value })),
-  },
-  expiry_date: {
-    type: 'date',
-    label: 'Expiration Date',
-  },
-  service_reference: {
-    type: 'number',
-    label: 'Service Reference',
-  },
-  IMEI: {
-    type: 'input',
-    label: 'IMEI',
-  },
-  PCN: {
-    type: 'input',
-    label: 'PCN',
-  },
-  sim_number: {
-    type: 'input',
-    label: 'SIM Number',
-  },
-  IMSI: {
-    type: 'input',
-    label: 'IMSI',
-  },
-  PUK: {
-    type: 'input',
-    label: 'PUK',
-  },
-}
 </script>
 
 <template>
@@ -225,7 +235,7 @@ const schema: FormSchema = {
       </template>
     </app-data-table>
 
-    <app-modal v-model:show="selected.show" :title="selected.title">
+    <app-modal id="voucher" v-model:show="selected.show" :title="selected.title">
       <app-form :label-width="150" :model="formValue">
         <app-form-items v-model="formValue" :schema="schema" />
       </app-form>

@@ -98,7 +98,7 @@ function downloadCSV() {
     </template>
 
     <n-space class="mb-3" justify="space-between">
-      <n-space size="small">
+      <n-input-group>
         <n-input v-model:value="searchQuery" class="!w-56" clearable placeholder="Search...">
           <template #suffix>
             <n-icon>
@@ -114,7 +114,7 @@ function downloadCSV() {
           </template>
           Filters
         </n-button>
-      </n-space>
+      </n-input-group>
       <n-space size="small">
         <n-button v-if="refresh" :loading="loading" @click="refresh()">
           <template #icon>
@@ -149,25 +149,21 @@ function downloadCSV() {
     </n-spin>
 
     <template #footer>
-      <div class="@3xl:grid flex flex-col items-center gap-2">
-        <div v-if="filteredData.length" class="col-start-1 row-start-1">
-          {{ (page - 1) * pageSize + 1 }} — {{ (page - 1) * pageSize + paginatedData.length }} of {{ total || filteredData.length }}
+      <div class="flex flex-col items-center gap-2 @3xl:grid">
+        <div v-if="filteredData.length" class="col-start-1 row-start-1 flex">
+          <n-popselect v-model:value="pageSize" :options="pageSizeOptions" trigger="click">
+            <n-button text>
+              {{ (page - 1) * pageSize + 1 }} – {{ (page - 1) * pageSize + paginatedData.length }}
+            </n-button>
+          </n-popselect>
+          <div class="ml-1.5">
+            of {{ total || filteredData.length }}
+          </div>
         </div>
 
         <n-pagination v-model:page="page" v-model:page-size="pageSize" class="col-start-1 row-start-1 justify-self-center" :page-count="totalPage || Math.ceil(filteredData.length / pageSize)" simple />
 
         <n-space class="col-start-1 row-start-1 justify-self-end" justify="center" size="small">
-          <n-popselect v-model:value="pageSize" :options="pageSizeOptions" trigger="click">
-            <n-button size="small">
-              <template #icon>
-                <n-icon>
-                  <i-list />
-                </n-icon>
-              </template>
-              {{ pageSize }} items
-            </n-button>
-          </n-popselect>
-
           <slot name="footer" :processed-data="paginatedData" />
 
           <n-button size="small" @click="downloadCSV">

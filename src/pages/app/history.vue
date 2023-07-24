@@ -22,7 +22,7 @@ const nestedColumns: DataTableColumns = [
   {
     key: 'expiry_date',
     title: 'Expiry Date',
-    render: row => dayjs(row.expiry_date).format('YYYY-MM-DD'),
+    render: row => row.expiry_date ? dayjs(row.expiry_date).format('YYYY-MM-DD') : 'No Expiry',
   },
   {
     key: 'status',

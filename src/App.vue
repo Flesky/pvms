@@ -15,7 +15,7 @@ const accessToken = useLocalStorage('access_token', undefined)
 axios.defaults.headers.common.Authorization = `Bearer ${accessToken.value}`
 
 const { push } = useRouter()
-push('/login')
+import.meta.env.PROD && push('/login')
 </script>
 
 <template>
