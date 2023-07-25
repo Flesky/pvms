@@ -221,7 +221,6 @@ const columns: DataTableColumns<Voucher> = [
 </script>
 
 <template>
-  {{ data }}
   <div class="w-full p-4">
     <app-data-table id="vouchers" v-bind="{ data, columns, loading, refresh }" v-model:selection="selection" :row-key="row => row.voucher_code" title="Vouchers">
       <template #selectionAction="{ selection }">
