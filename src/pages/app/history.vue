@@ -25,9 +25,9 @@ const nestedColumns: DataTableColumns = [
     render: row => row.expiry_date ? dayjs(row.expiry_date).format('YYYY-MM-DD') : 'No Expiry',
   },
   {
-    key: 'status',
-    title: 'Status',
-    render: row => <n-tag>{row.status.charAt(0).toUpperCase() + row.status.slice(1)}</n-tag>,
+    key: 'available',
+    title: 'Availability',
+    render: row => <n-tag type={row.available ? 'success' : 'default'}>{row.available ? 'Available' : 'Not Available'}</n-tag>,
   },
   {
     key: 'service_reference',

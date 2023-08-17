@@ -14,7 +14,7 @@ export interface Voucher {
   value: number
   product_code: string
   expiry_date: string
-  status: string
+  available: 0 | 1
   service_reference?: string
   IMEI?: string
   PCN?: string
@@ -158,9 +158,9 @@ const columns: DataTableColumns<Voucher> = [
     render: row => row.expiry_date || 'No Expiry',
   },
   {
-    key: 'status',
-    title: 'Status',
-    render: row => <n-tag type={row.status === 'active' ? 'success' : 'default'}>{row.status.charAt(0).toUpperCase() + row.status.slice(1)}</n-tag>,
+    key: 'available',
+    title: 'Availability',
+    render: row => <n-tag type={row.available ? 'success' : 'default'}>{row.available ? 'Available' : 'Not Available'}</n-tag>,
   },
   {
     key: 'service_reference',

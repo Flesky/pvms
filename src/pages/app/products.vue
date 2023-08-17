@@ -2,6 +2,10 @@
 import type { DataTableColumns } from 'naive-ui'
 import type { FormSchema } from '@/components/app/form/types'
 
+definePage({
+  name: 'Products',
+})
+
 export interface Product {
   id: number
   product_code: string
@@ -108,6 +112,15 @@ const schema: FormSchema = {
     label: 'Product Type',
   },
 }
+
+function showModal() {
+  modal.value = {
+    show: true,
+    title: 'Add product',
+    id: 0,
+  }
+  formValue.value = {}
+}
 </script>
 
 <template>
@@ -115,11 +128,7 @@ const schema: FormSchema = {
     <app-data-table id="products" v-bind="{ data, columns, loading }" title="Products">
       <template #action>
         <n-button
-          round type="primary" @click="modal = {
-            show: true,
-            title: 'Add product',
-            id: 0,
-          }"
+          round type="primary" @click="showModal"
         >
           Add product
         </n-button>
