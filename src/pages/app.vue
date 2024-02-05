@@ -1,36 +1,34 @@
 <script setup lang="tsx">
+import auth from '@/utils/auth'
+
 definePage({
   path: '/',
-  meta: {
-    requiresAuth: true,
-  },
 })
 
 const router = useRouter()
 const message = useMessage()
 const collapsed = useLocalStorage('collapsed', false)
 
-axios.interceptors.response.use(
-  response => response,
-  (error) => {
-    switch (error.response.status) {
-      case 400:
-      case 422:
-        Object.values(error.response.data.errors).forEach(errors => errors.forEach(error => message.error(error)))
-        break
-      case 401:
-        localStorage.removeItem('access_token')
-        router.push('/login')
-        break
-    }
-
-    return Promise.reject(error)
-  },
-)
+// axios.interceptors.response.use(
+//   response => response,
+//   (error) => {
+//     switch (error.response.status) {
+//       case 400:
+//       case 422:
+//         Object.values(error.response.data.errors).forEach(errors => errors.forEach(error => message.error(error)))
+//         break
+//       case 401:
+//         localStorage.removeItem('access_token')
+//         router.push('/login')
+//         break
+//     }
+//
+//     return Promise.reject(error)
+//   },
+// )
 
 function handleLogout() {
-  localStorage.removeItem('access_token')
-  router.push('/login')
+  auth.signOut()
 }
 </script>
 
@@ -44,7 +42,7 @@ function handleLogout() {
         </app-header-item>
         <img class="ml-2 w-24 object-contain" src="/pivotel-logo.png">
       </div>
-      <n-button class="!mr-4" color="ffffff" quaternary>
+      <n-button class="!mr-4" color="ffffff" quaternary @click="handleLogout">
         Log out
       </n-button>
     </n-layout-header>

@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import type { GlobalThemeOverrides } from 'naive-ui'
 
+axios.defaults.baseURL = import.meta.env.VITE_API_URL
+// const accessToken = useLocalStorage('access_token', undefined)
+// axios.defaults.headers.common.Authorization = `Bearer ${accessToken.value}`
+//
+// const { push } = useRouter()
+// import.meta.env.PROD && push('/login')
+
 const themeOverrides: GlobalThemeOverrides = {
   common: {
     primaryColor: '#87179d',
@@ -9,13 +16,6 @@ const themeOverrides: GlobalThemeOverrides = {
     primaryColorSuppl: '#a24ab2',
   },
 }
-
-axios.defaults.baseURL = import.meta.env.VITE_API_URL
-const accessToken = useLocalStorage('access_token', undefined)
-axios.defaults.headers.common.Authorization = `Bearer ${accessToken.value}`
-
-const { push } = useRouter()
-import.meta.env.PROD && push('/login')
 </script>
 
 <template>
