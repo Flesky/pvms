@@ -4,8 +4,8 @@ const auth = createOidcAuth('main',
   SignInType.Window,
   import.meta.env.VITE_BASE_URL,
   {
-    authority: 'https://id.smsglobal.net/realms/master/',
-    client_id: 'kc-test',
+    authority: import.meta.env.VITE_AUTHORITY_URL,
+    client_id: import.meta.env.VITE_CLIENT_ID,
     response_type: 'id_token',
     scope: 'openid email profile',
 
