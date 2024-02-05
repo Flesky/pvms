@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import type { GlobalThemeOverrides } from 'naive-ui'
 
-axios.defaults.baseURL = import.meta.env.VITE_API_URL
-// const accessToken = useLocalStorage('access_token', undefined)
-// axios.defaults.headers.common.Authorization = `Bearer ${accessToken.value}`
 //
 // const { push } = useRouter()
 // import.meta.env.PROD && push('/login')
