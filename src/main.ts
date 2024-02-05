@@ -20,6 +20,6 @@ auth.startup().then((isOk) => {
     app.use(pinia)
     app.use(router)
     app.mount('#app')
-    axios.defaults.headers.common.Authorization = `Bearer ${auth.accessToken}`
+    axios.defaults.headers.common.Authorization = `Bearer ${auth.user.id_token}`
   }
 })
