@@ -1,18 +1,9 @@
-# vue-naive-starter
+# Mantine starter project
+[![code style](https://antfu.me/badge-code-style.svg)](https://github.com/antfu/eslint-config)
 
-An opinionated starter Vue project for rapidly building admin apps.
+This is a work in progress. Will be improved upon as I learn more React.
 
-## Features:
-
-- Vue 3, TypeScript, JSX support
-- Naive UI for components, Tailwind CSS for styling
-- Preinstalled Pinia, VueUse, and dayjs
-- File based routing
-- Auto-imported APIs, components, and icons
-- ESLint with antfu's config
-
-## How to use:
-
-- [ ] Clone this repo
-- [ ] Add name and version to package.json
-- [ ] [Configure your icons](https://github.com/antfu/unplugin-icons)
+* Vite + React + TypeScript
+* Mantine + Tailwind + Tabler Icons
+* React Router
+* TanStack React Query
