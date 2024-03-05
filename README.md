@@ -1,9 +1,9 @@
-# Mantine starter project
-[![code style](https://antfu.me/badge-code-style.svg)](https://github.com/antfu/eslint-config)
+# Quick start guide
 
-This is a work in progress. Will be improved upon as I learn more React.
+On your terminal, run
+```
+npm install
+npm run build-only
+```
 
-* Vite + React + TypeScript
-* Mantine + Tailwind + Tabler Icons
-* React Router
-* TanStack React Query
+Then deploy the `/dist` folder as a static website and redirect requests to `index.html` or set SPA mode.
