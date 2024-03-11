@@ -17,7 +17,7 @@ const theme = createTheme({
     // error: ,
   },
   primaryColor: 'accent',
-  primaryShade: 8,
+  primaryShade: 7,
 })
 
 export default theme

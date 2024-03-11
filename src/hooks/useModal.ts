@@ -1,20 +1,27 @@
 import { useState } from 'react'
-import { useDisclosure } from '@mantine/hooks'
+
+const defaultValues = {
+  opened: false,
+  title: '',
+  id: '',
+}
 
 export default function useModal() {
-  const [title, setTitle] = useState('')
-  const [opened, { open, close }] = useDisclosure()
+  const [state, setState] = useState(defaultValues)
+  // const [opened, { open, close }] = useDisclosure()
 
   return {
-    open: (title: string) => {
-      setTitle(title)
-      open()
+    open: (title: string, id = '') => {
+      setState({ opened: true, title, id })
     },
-    close,
+    close: () => {
+      setState(defaultValues)
+    },
+    id: state.id,
     modalProps: {
-      onClose: () => close(),
-      opened,
-      title,
+      onClose: () => setState({ opened: false, title: '', id: '' }),
+      opened: state.opened,
+      title: state.title,
     },
   }
 }

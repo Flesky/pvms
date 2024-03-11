@@ -1,29 +1,36 @@
-import { AppShell, Box, Burger, Button, Group, NavLink as MantineNavLink, Stack, Text } from '@mantine/core'
-import { NavLink, Outlet } from 'react-router-dom'
-import { useAuth, withAuthenticationRequired } from 'react-oidc-context'
+import { Outlet, NavLink as RouterNavLink, matchPath, useLocation } from 'react-router-dom'
+import { AppShell, Box, Burger, Button, Group, NavLink, Stack, Text } from '@mantine/core'
+import { useDisclosure } from '@mantine/hooks'
+import { createContext } from 'react'
 import { navLinks } from './utils/router'
-import { useStore } from './utils/store.ts'
 
-function DefaultLayout() {
-  const auth = useAuth()
-  const { navbarCollapsed } = useStore()
+export const NavbarContext = createContext({
+  toggleDesktop: () => {},
+  toggleMobile: () => {},
+  desktopOpened: true,
+  mobileOpened: false,
+})
+
+function Layout() {
+  const [mobileOpened, { toggle: toggleMobile }] = useDisclosure()
+  const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(true)
+  const { pathname } = useLocation()
 
   return (
     <AppShell
-      layout="alt"
-      padding={0}
-      header={{ height: 60 }}
       navbar={{
-        width: 300,
+        collapsed: { desktop: !desktopOpened, mobile: !mobileOpened },
         breakpoint: 'sm',
-        collapsed: { mobile: navbarCollapsed.mobile, desktop: navbarCollapsed.desktop },
+        width: 300,
       }}
+      header={{ height: 60 }}
+      layout="alt"
     >
       <AppShell.Navbar>
         <Box bg="accent" p="md">
           <Group mt="md" justify="space-between">
             <img className="w-32" src="pivotel.png" />
-            <Burger color="white" opened={true} onClick={navbarCollapsed.toggleMobile} hiddenFrom="sm" size="sm" />
+            <Burger color="white" opened={true} onClick={toggleMobile} hiddenFrom="sm" size="sm" />
           </Group>
           <Text mt="6px" mb="xl" c="white">Voucher Management System</Text>
         </Box>
@@ -31,21 +38,25 @@ function DefaultLayout() {
           <div>
             {navLinks.map(item => (
               <NavLink
-                to={item.to}
+                classNames={{
+                  root: 'px-3 py-2.5 group rounded',
+                  label: 'font-medium',
+                }}
+                styles={{
+                  root: {
+                  },
+                }}
+                onClick={() => {
+                  if (pathname !== item.to)
+                    toggleMobile()
+                }}
+                active={!!matchPath(pathname, item.to)}
+                leftSection={<item.icon />}
+                component={RouterNavLink}
+                label={item.label}
                 key={item.to}
-              >
-                {({ isActive }) => (
-                  <MantineNavLink
-                    label={item.label}
-                    leftSection={<item.icon />}
-                    classNames={{
-                      root: 'px-3 py-2.5 group rounded',
-                      label: 'font-medium',
-                    }}
-                    active={isActive}
-                  />
-                )}
-              </NavLink>
+                to={item.to}
+              />
             ))}
           </div>
           <Button
@@ -60,14 +71,24 @@ function DefaultLayout() {
         </Stack>
       </AppShell.Navbar>
       <AppShell.Main className="h-dvh">
-        <Outlet />
+        <NavbarContext.Provider value={{
+          desktopOpened,
+          toggleDesktop,
+          mobileOpened,
+          toggleMobile,
+        }}
+        >
+          <Outlet />
+        </NavbarContext.Provider>
       </AppShell.Main>
     </AppShell>
   )
 }
 
-const Layout = withAuthenticationRequired(DefaultLayout, {
-  OnRedirecting: () => <div className="p-4 text-sm">Authenticating...</div>,
-})
+// const DefaultLayout = withAuthenticationRequired(Layout, {
+//   OnRedirecting: () => <Box p="md">Authenticating...</Box>,
+// })
+
+// export default DefaultLayout
 
 export default Layout
