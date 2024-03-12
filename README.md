@@ -1,27 +1,19 @@
-# Mantine starter project
-[![code style](https://antfu.me/badge-code-style.svg)](https://github.com/antfu/eslint-config)
+# PVMS
 
-This is a work in progress. Will be improved upon as I learn more React.
+## Quick start
 
-* Vite + React + TypeScript
-* Mantine + Tailwind + Tabler Icons
-* Yup
-* React Router
-* TanStack React Query
+### For testing
+```
+npm install
+npm run dev
+```
 
-## Built-in Components
+Then open https://localhost:5173 on your browser.
 
-* Header
-* Datatable
-    ```tsx
-    import AppClientTable from "./AppClientTable";
-    
-    <AppClientTable
-      id="id"
-      tableProps={{
-        records: [],
-        columns: [],
-      }}
-    >
-    </AppClientTable>
-    ```
+### For deployment
+```
+npm install
+npm run build
+```
+
+Then deploy the /dist folder as a static website and redirect requests to index.html or set SPA mode.

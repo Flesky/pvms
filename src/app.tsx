@@ -2,6 +2,7 @@ import { Outlet, NavLink as RouterNavLink, matchPath, useLocation } from 'react-
 import { AppShell, Box, Burger, Button, Group, NavLink, Stack, Text } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { createContext } from 'react'
+import { auth, withAuthenticationRequired } from 'react-oidc-context'
 import { navLinks } from './utils/router'
 
 export const NavbarContext = createContext({
@@ -29,7 +30,7 @@ function Layout() {
       <AppShell.Navbar>
         <Box bg="accent" p="md">
           <Group mt="md" justify="space-between">
-            <img className="w-32" src="pivotel.png" />
+            <img className="w-32" src="pivotel.png" alt="Pivotel logo" />
             <Burger color="white" opened={true} onClick={toggleMobile} hiddenFrom="sm" size="sm" />
           </Group>
           <Text mt="6px" mb="xl" c="white">Voucher Management System</Text>
@@ -85,10 +86,8 @@ function Layout() {
   )
 }
 
-// const DefaultLayout = withAuthenticationRequired(Layout, {
-//   OnRedirecting: () => <Box p="md">Authenticating...</Box>,
-// })
+const DefaultLayout = withAuthenticationRequired(Layout, {
+  OnRedirecting: () => <Box p="md">Authenticating...</Box>,
+})
 
-// export default DefaultLayout
-
-export default Layout
+export default DefaultLayout
