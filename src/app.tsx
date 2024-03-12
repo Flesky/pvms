@@ -2,7 +2,7 @@ import { Outlet, NavLink as RouterNavLink, matchPath, useLocation } from 'react-
 import { AppShell, Box, Burger, Button, Group, NavLink, Stack, Text } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { createContext } from 'react'
-import { auth, withAuthenticationRequired } from 'react-oidc-context'
+import { useAuth, withAuthenticationRequired } from 'react-oidc-context'
 import { navLinks } from './utils/router'
 
 export const NavbarContext = createContext({
@@ -13,6 +13,7 @@ export const NavbarContext = createContext({
 })
 
 function Layout() {
+  const auth = useAuth()
   const [mobileOpened, { toggle: toggleMobile }] = useDisclosure()
   const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(true)
   const { pathname } = useLocation()
