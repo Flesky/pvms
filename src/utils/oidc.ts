@@ -17,7 +17,7 @@ const config: AuthProviderProps = {
 }
 
 function getUser() {
-  const oidcStorage = localStorage.getItem(`oidc.user:${import.meta.env.VITE_AUTHORITY_URL}:${import.meta.env.VITE_CLIENT_ID}`)
+  const oidcStorage = sessionStorage.getItem(`oidc.user:${import.meta.env.VITE_AUTHORITY_URL}:${import.meta.env.VITE_CLIENT_ID}`)
   if (!oidcStorage)
     return null
 
