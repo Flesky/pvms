@@ -9,7 +9,6 @@ export default function VoucherCodes({ code }) {
     retry: false,
     queryFn: async () => {
       const res = await api.get(`getVoucher/${code}`).json()
-      console.log(typeof res.results[0].voucher_children[0].depleted)
       return res.results[0].voucher_children
     },
   })

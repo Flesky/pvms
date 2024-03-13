@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { notifications } from '@mantine/notifications'
 import * as yup from 'yup'
 import { useForm, yupResolver } from '@mantine/form'
-import { Button, Group, Modal, NumberInput, Select, TextInput } from '@mantine/core'
+import { Button, Grid, Group, Modal, NumberInput, Select, Text, TextInput } from '@mantine/core'
 import { IconChevronRight, IconPlus } from '@tabler/icons-react'
 import { DateInput } from '@mantine/dates'
 import useModal from '../hooks/useModal.ts'
@@ -28,6 +28,10 @@ const schema = yup.object().shape({
   voucher_code_reference: yup.string(),
   value: yup.number().min(0),
   expiry_date: yup.date().nullable(),
+
+  serviceID: yup.string(),
+  business_unit: yup.string(),
+  serial_number: yup.string(),
 })
 
 export default function Vouchers() {
@@ -54,7 +58,7 @@ export default function Vouchers() {
     mutationFn: async ({ values, id }: { values: Voucher, id?: string }) => {
       const json = {
         ...values,
-        expiry_date: values.expiry_date ? (values.expiry_date as Date).toISOString().split('T')[0] : undefined,
+        expiry_date: values.expiry_date ? (values.expiry_date as unknown as Date).toISOString().split('T')[0] : undefined,
       }
 
       return !id
@@ -63,7 +67,7 @@ export default function Vouchers() {
     },
     onSuccess: (data: GetResponse<Voucher>) => {
       queryClient.invalidateQueries({ queryKey: ['voucher'] })
-      notifications.show({ message: `Successfully saved voucher: ${data.results.voucher_code}` })
+      notifications.show({ message: `Successfully saved voucher: ${data.results.voucher_code || data.results[0].voucher_code}` })
       close()
     },
   })
@@ -84,6 +88,10 @@ export default function Vouchers() {
       product_code_reference: '',
       value: 0,
       expiry_date: '',
+
+      serviceID: '',
+      business_unit: '',
+      serial_number: '',
     },
     validate: yupResolver(schema),
   })
@@ -92,20 +100,49 @@ export default function Vouchers() {
     <>
       <Modal {...modalProps}>
         <form onSubmit={form.onSubmit(values => save({ values, id }))}>
-          <TextInput label="Voucher code" {...form.getInputProps('voucher_code')} />
-          <NumberInput min={1} mt="sm" data-autofocus label="Voucher count" {...form.getInputProps('voucher_count')} />
-          <Select
-            searchable
-            mt="sm"
-            label="Product code"
-            {...form.getInputProps('product_code_reference')}
-            data={records?.products?.map(({ product_code, product_name }) => ({ label: `${product_code} ${product_name}`, value: product_code }))}
-          />
-          <NumberInput min={0} mt="sm" data-autofocus label="Value" {...form.getInputProps('value')} />
-          <DateInput clearable mt="sm" label="Expiry date" {...form.getInputProps('expiry_date')} />
-          <Group mt="xl" justify="end">
-            <Button loading={isSaving} type="submit">Save</Button>
-          </Group>
+          <Grid>
+            <Grid.Col span={12}>
+              <TextInput disabled={!!id} required data-autofocus label="Voucher code" {...form.getInputProps('voucher_code')} />
+            </Grid.Col>
+            <Grid.Col span={6}>
+              <NumberInput disabled={!!id} required min={1} label="Voucher count" {...form.getInputProps('voucher_count')} />
+            </Grid.Col>
+            <Grid.Col span={6}>
+              <NumberInput required min={0} label="Value" {...form.getInputProps('value')} />
+            </Grid.Col>
+            <Grid.Col span={12}>
+              <Select
+                searchable
+                clearable
+                label="Product code"
+                {...form.getInputProps('product_code_reference')}
+                data={records?.products?.map(({ product_code, product_name }) => ({ label: `${product_code} ${product_name}`, value: product_code }))}
+              />
+            </Grid.Col>
+            <Grid.Col span={12}>
+              <DateInput clearable label="Expiry date" {...form.getInputProps('expiry_date')} />
+            </Grid.Col>
+            <Grid.Col span={12}>
+              <TextInput disabled={!!id} label="Service ID" {...form.getInputProps('service_id')} />
+            </Grid.Col>
+            <Grid.Col span={12}>
+              <TextInput disabled={!!id} label="Business unit" {...form.getInputProps('business_unit')} />
+            </Grid.Col>
+            <Grid.Col span={12}>
+              <TextInput disabled={!!id} label="Serial number" {...form.getInputProps('serial_number')} />
+            </Grid.Col>
+            {!id && (
+              <Grid.Col span={12}>
+                <Text c="dimmed">Voucher code, voucher count, service ID, business unit, and serial number cannot be edited once entered.</Text>
+              </Grid.Col>
+            )}
+            <Grid.Col span={12}>
+              <Group mt="sm" justify="end">
+                <Button loading={isSaving} type="submit">Save</Button>
+              </Group>
+            </Grid.Col>
+          </Grid>
+
         </form>
       </Modal>
       <AppHeader title="Vouchers">
@@ -145,7 +182,8 @@ export default function Vouchers() {
                     size="xs"
                     variant="light"
                     color="gray"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation()
                       form.setValues({ ...row,
                       // Date = YYYY-MM-DD. Convert to valid date
                         expiry_date: row.expiry_date ? new Date(`${row.expiry_date}T00:00:00`) : undefined })

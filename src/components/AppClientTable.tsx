@@ -11,7 +11,7 @@ interface Props<T> {
   children?: ReactNode
 }
 
-export default function AppClientTable<T = Record<string, any>>(props: Props<T>) {
+export default function AppClientTable<T extends Record<string, any>>(props: Props<T>) {
   const { tableProps, children } = props
   const { records, recordsPerPage } = tableProps
   const [search, setSearch] = useState('')

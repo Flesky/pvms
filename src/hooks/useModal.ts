@@ -16,7 +16,7 @@ export default function useModal() {
     },
     id: state.id,
     modalProps: {
-      onClose: () => setState({ opened: false, title: '', id: '' }),
+      onClose: () => setState({ ...state, opened: false }),
       opened: state.opened,
       title: state.title,
     },
