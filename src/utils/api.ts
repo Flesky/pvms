@@ -7,9 +7,9 @@ const api = ky.create({
   hooks: {
     beforeRequest: [
       (request) => {
-        // const token = getUser()?.access_token
-        // request.headers.set('Authorization', `Bearer ${token}`)
-        request.headers.set('Authorization', `q`)
+        const token = getUser()?.access_token
+        request.headers.set('Authorization', `Bearer ${token}`)
+        // request.headers.set('Authorization', `q`)
       },
     ],
     beforeError: [
