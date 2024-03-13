@@ -1,21 +1,18 @@
 import { useState } from 'react'
 
-const defaultValues = {
-  opened: false,
-  title: '',
-  id: '',
-}
-
 export default function useModal() {
-  const [state, setState] = useState(defaultValues)
-  // const [opened, { open, close }] = useDisclosure()
+  const [state, setState] = useState({
+    opened: false,
+    title: '',
+    id: '',
+  })
 
   return {
     open: (title: string, id = '') => {
       setState({ opened: true, title, id })
     },
     close: () => {
-      setState(defaultValues)
+      setState({ ...state, opened: false })
     },
     id: state.id,
     modalProps: {

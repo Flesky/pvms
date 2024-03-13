@@ -1,5 +1,6 @@
 import ky from 'ky'
 import { notifications } from '@mantine/notifications'
+import { getUser } from './oidc.ts'
 
 const api = ky.create({
   prefixUrl: import.meta.env.VITE_API_URL,
