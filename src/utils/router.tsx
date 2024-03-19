@@ -11,6 +11,7 @@ const navLinks = [
   // { to: '/', label: 'Home', icon: IconHome },
   { to: '/', label: 'Products', icon: IconBox },
   { to: '/vouchers', label: 'Vouchers', icon: IconTicket },
+  { to: '/vouchers/add', label: 'Add Vouchers', icon: IconTicket },
 ]
 
 const router = createBrowserRouter([

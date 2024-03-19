@@ -2,36 +2,46 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { notifications } from '@mantine/notifications'
 import * as yup from 'yup'
 import { useForm, yupResolver } from '@mantine/form'
-import { Button, Grid, Group, Modal, NumberInput, Select, Text, TextInput } from '@mantine/core'
-import { IconChevronRight, IconPlus } from '@tabler/icons-react'
+import { Button, Grid, Group, Modal, NumberInput, Select, TextInput } from '@mantine/core'
+import { IconPlus } from '@tabler/icons-react'
 import { DateInput } from '@mantine/dates'
 import useModal from '../hooks/useModal.ts'
 import api from '../utils/api.ts'
 import type { GetAllResponse, GetResponse, Result } from '../types'
 import AppHeader from '../components/AppHeader.tsx'
 import AppClientTable from '../components/AppClientTable.tsx'
-import VoucherCodes from '../components/VoucherCodes.tsx'
 import type { Product } from './products.tsx'
 
 interface Voucher extends Result {
   voucher_code: string
   product_code_reference: string
   expiry_date: string
-  voucher_count: number
   value: number
   available?: number
+  serviceID: string
+  business_unit: string
+  serial_number: string
+  IMEI: string
+  SIMNarrative: string
+  SIMNo: string
+  IMSI: string
+  PUK: string
 }
 
 const schema = yup.object().shape({
   voucher_code: yup.string().required(),
-  voucher_count: yup.number().min(1),
-  voucher_code_reference: yup.string(),
+  product_code_reference: yup.string().nullable(),
   value: yup.number().min(0),
   expiry_date: yup.date().nullable(),
 
-  serviceID: yup.string(),
-  business_unit: yup.string(),
-  serial_number: yup.string(),
+  serviceID: yup.string().required(),
+  business_unit: yup.string().required(),
+  serial_number: yup.string().required(),
+  IMEI: yup.string().required(),
+  SIMNarrative: yup.string().required(),
+  SIMNo: yup.string().required(),
+  IMSI: yup.string().required(),
+  PUK: yup.string().required(),
 })
 
 export default function Vouchers() {
@@ -46,7 +56,9 @@ export default function Vouchers() {
         api.get('product').json() as GetAllResponse<Product>,
       ])
       // eslint-disable-next-line ts/no-use-before-define
-      reset()
+      resetSave()
+      // eslint-disable-next-line ts/no-use-before-define
+      resetToggle()
       return {
         vouchers: vouchers.results,
         products: products.results,
@@ -54,7 +66,7 @@ export default function Vouchers() {
     },
   })
 
-  const { mutate: save, isPending: isSaving } = useMutation({
+  const { mutate: save, variables: saving, isPending: isSaving, reset: resetSave } = useMutation({
     mutationFn: async ({ values, id }: { values: Voucher, id?: string }) => {
       const json = {
         ...values,
@@ -72,7 +84,7 @@ export default function Vouchers() {
     },
   })
 
-  const { mutate: toggle, variables, reset } = useMutation({
+  const { mutate: toggle, variables: toggling, reset: resetToggle } = useMutation({
     mutationFn: async (values: Voucher) => await api.patch(`set${values.available ? 'Inactive' : 'Active'}/${values.voucher_code}`).json() as GetResponse<Voucher>,
     onSuccess: (data: GetResponse<Voucher>) => {
       queryClient.invalidateQueries({ queryKey: ['voucher'] })
@@ -84,7 +96,6 @@ export default function Vouchers() {
   const form = useForm({
     initialValues: {
       voucher_code: '',
-      voucher_count: 1,
       product_code_reference: '',
       value: 0,
       expiry_date: '',
@@ -92,6 +103,11 @@ export default function Vouchers() {
       serviceID: '',
       business_unit: '',
       serial_number: '',
+      IMEI: '',
+      SIMNarrative: '',
+      SIMNo: '',
+      IMSI: '',
+      PUK: '',
     },
     validate: yupResolver(schema),
   })
@@ -104,10 +120,7 @@ export default function Vouchers() {
             <Grid.Col span={12}>
               <TextInput disabled={!!id} required data-autofocus label="Voucher code" {...form.getInputProps('voucher_code')} />
             </Grid.Col>
-            <Grid.Col span={6}>
-              <NumberInput disabled={!!id} required min={1} label="Voucher count" {...form.getInputProps('voucher_count')} />
-            </Grid.Col>
-            <Grid.Col span={6}>
+            <Grid.Col span={12}>
               <NumberInput required min={0} label="Value" {...form.getInputProps('value')} />
             </Grid.Col>
             <Grid.Col span={12}>
@@ -116,33 +129,42 @@ export default function Vouchers() {
                 clearable
                 label="Product code"
                 {...form.getInputProps('product_code_reference')}
-                data={records?.products?.map(({ product_code, product_name }) => ({ label: `${product_code} ${product_name}`, value: product_code }))}
+                data={records?.products?.map(({ product_code, product_name }) => ({ label: `${product_code} - ${product_name}`, value: product_code }))}
               />
             </Grid.Col>
             <Grid.Col span={12}>
               <DateInput clearable label="Expiry date" {...form.getInputProps('expiry_date')} />
             </Grid.Col>
             <Grid.Col span={12}>
-              <TextInput disabled={!!id} label="Service ID" {...form.getInputProps('service_id')} />
+              <TextInput required label="Service ID" {...form.getInputProps('serviceID')} />
             </Grid.Col>
             <Grid.Col span={12}>
-              <TextInput disabled={!!id} label="Business unit" {...form.getInputProps('business_unit')} />
+              <TextInput required label="Business unit" {...form.getInputProps('business_unit')} />
             </Grid.Col>
             <Grid.Col span={12}>
-              <TextInput disabled={!!id} label="Serial number" {...form.getInputProps('serial_number')} />
+              <TextInput required label="Serial number" {...form.getInputProps('serial_number')} />
             </Grid.Col>
-            {!id && (
-              <Grid.Col span={12}>
-                <Text c="dimmed">Voucher code, voucher count, service ID, business unit, and serial number cannot be edited once entered.</Text>
-              </Grid.Col>
-            )}
+            <Grid.Col span={12}>
+              <TextInput required label="IMEI" {...form.getInputProps('IMEI')} />
+            </Grid.Col>
+            <Grid.Col span={12}>
+              <TextInput required label="SIM Narrative" {...form.getInputProps('SIMNarrative')} />
+            </Grid.Col>
+            <Grid.Col span={12}>
+              <TextInput required label="SIM number" {...form.getInputProps('SIMNo')} />
+            </Grid.Col>
+            <Grid.Col span={12}>
+              <TextInput required label="IMSI" {...form.getInputProps('IMSI')} />
+            </Grid.Col>
+            <Grid.Col span={12}>
+              <TextInput required label="PUK" {...form.getInputProps('PUK')} />
+            </Grid.Col>
             <Grid.Col span={12}>
               <Group mt="sm" justify="end">
                 <Button loading={isSaving} type="submit">Save</Button>
               </Group>
             </Grid.Col>
           </Grid>
-
         </form>
       </Modal>
       <AppHeader title="Vouchers">
@@ -162,16 +184,28 @@ export default function Vouchers() {
           records: records?.vouchers,
           fetching: isPending,
           columns: [
-            { accessor: 'voucher_code', render: ({ voucher_code }) => (
-              <Group wrap="nowrap">
-                <IconChevronRight size={16} />
-                <span>{voucher_code}</span>
-              </Group>
-            ) },
+            { accessor: 'voucher_code',
+              // render: ({ voucher_code }) => (
+              //   <Group wrap="nowrap">
+              //     <IconChevronRight size={16} />
+              //     <span>{voucher_code}</span>
+              //   </Group>
+              // )
+            },
             {
               accessor: 'product_code_reference',
             },
             { accessor: 'expiry_date' },
+            { accessor: 'value' },
+            { accessor: 'serviceID', title: 'Service ID' },
+            { accessor: 'business_unit' },
+            { accessor: 'serial_number' },
+            { accessor: 'IMEI', title: 'IMEI' },
+            { accessor: 'SIMNarrative', title: 'Narrative' },
+            { accessor: 'SIMNo', title: 'SIM number' },
+            { accessor: 'IMSI', title: 'IMSI' },
+            { accessor: 'PUK', title: 'PUK' },
+            { accessor: 'available', title: 'Status', render: ({ available }) => (available ? 'Active' : 'Inactive') },
             {
               accessor: 'actions',
               title: 'Actions',
@@ -182,11 +216,12 @@ export default function Vouchers() {
                     size="xs"
                     variant="light"
                     color="gray"
+                    loading={saving?.id === row.voucher_code}
                     onClick={(e) => {
                       e.stopPropagation()
                       form.setValues({ ...row,
                       // Date = YYYY-MM-DD. Convert to valid date
-                        expiry_date: row.expiry_date ? new Date(`${row.expiry_date}T00:00:00`) : undefined })
+                        expiry_date: row.expiry_date ? new Date(`${row.expiry_date}T00:00:00`) as unknown as string : undefined })
                       open(`Edit ${row.voucher_code}`, row.voucher_code)
                     }}
                   >
@@ -195,7 +230,7 @@ export default function Vouchers() {
                   <Button
                     size="xs"
                     variant="light"
-                    loading={variables?.voucher_code === row.voucher_code}
+                    loading={toggling?.voucher_code === row.voucher_code}
                     color={row.available ? 'red' : 'green'}
                     onClick={(e) => {
                       e.stopPropagation()
@@ -211,10 +246,10 @@ export default function Vouchers() {
               ,
             },
           ],
-          rowExpansion: {
-            allowMultiple: true,
-            content: ({ record }) => (<VoucherCodes code={record.voucher_code} />),
-          },
+          // rowExpansion: {
+          //   allowMultiple: true,
+          //   content: ({ record }) => (<VoucherCodes code={record.voucher_code} />),
+          // },
         }}
       />
     </>
