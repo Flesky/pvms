@@ -144,7 +144,12 @@ export default function Vouchers() {
 
   const { mutate: upload, variables: uploading, isPending: isUploading } = useMutation({
     mutationFn: async (values) => {
-      await api.post('batchOrder', { values }).json()
+      const formData = new FormData()
+      formData.append('batch_id', values.batch_id)
+      formData.append('product_id', Number(values.product_id))
+      console.log(values.product_id)
+      formData.append('file', values.file)
+      await api.post('batchOrder', { body: formData }).json()
     },
 
     onSuccess: (data: GetResponse<Voucher>) => {
@@ -308,9 +313,15 @@ export default function Vouchers() {
             <Grid.Col span={12}>
               <TextInput required label="Batch ID" {...batchOrderForm.getInputProps('batch_id')} />
             </Grid.Col>
-            {/* <Grid.Col span={12}> */}
-            {/*  <TextInput required label="Product ID" {...batchOrderForm.getInputProps('product_id')} /> */}
-            {/* </Grid.Col> */}
+            <Grid.Col span={12}>
+              <Select
+                searchable
+                clearable
+                label="Product reference"
+                {...batchOrderForm.getInputProps('product_id')}
+                data={records?.products?.map(({ product_id, product_name }) => ({ label: product_name, value: String(product_id) }))}
+              />
+            </Grid.Col>
             <Grid.Col span={12}>
               <FileInput accept="csv" label="Upload files" {...batchOrderForm.getInputProps('file')} placeholder="Select CSV file" />
             </Grid.Col>
