@@ -16,7 +16,9 @@ export default function AppHeader({ children, title }: { children?: ReactNode, t
           <Burger onClick={toggleDesktop} opened={desktopOpened} size="sm" visibleFrom="sm" />
           <Title size="md">{title || 'Page'}</Title>
         </Group>
-        {children}
+        <Group h="100%" gap={10}>
+          {children}
+        </Group>
       </Group>
     </AppShell.Header>
   )

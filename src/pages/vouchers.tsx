@@ -2,7 +2,19 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { notifications } from '@mantine/notifications'
 import * as yup from 'yup'
 import { useForm, yupResolver } from '@mantine/form'
-import { Button, Grid, Group, Modal, NumberInput, Pill, SegmentedControl, Select, Stack, TextInput } from '@mantine/core'
+import {
+  Button,
+  FileInput,
+  Grid,
+  Group,
+  Modal,
+  NumberInput,
+  Pill,
+  SegmentedControl,
+  Select,
+  Stack,
+  TextInput,
+} from '@mantine/core'
 import { IconPlus } from '@tabler/icons-react'
 import { DateInput } from '@mantine/dates'
 import { useState } from 'react'
@@ -57,6 +69,7 @@ const schema = yup.object().shape({
 })
 
 export default function Vouchers() {
+  const { open: formOpen, close: formClose, id: formId, modalProps: formModalProps } = useModal()
   const { open, close, id, modalProps } = useModal()
   const queryClient = useQueryClient()
   const [view, setView] = useState<'all' | 'batch' | number>('all')
@@ -96,7 +109,7 @@ export default function Vouchers() {
       queryClient.invalidateQueries({ queryKey: ['voucher'] })
       // @ts-expect-error Inconsistent typing from API
       notifications.show({ message: `Successfully saved voucher: ${data.results.serial || data.results[0].serial}` })
-      close()
+      formClose()
     },
   })
 
@@ -105,11 +118,11 @@ export default function Vouchers() {
     onSuccess: (data: GetResponse<Voucher>) => {
       queryClient.invalidateQueries({ queryKey: ['voucher'] })
       notifications.show({ message: `Successfully ${data.results.available ? 'activated' : 'deactivated'} voucher: ${data.results.serial}` })
-      close()
+      formClose()
     },
   })
 
-  const form = useForm({
+  const voucherForm = useForm({
     initialValues: {
       product_code: '',
       product_id: '',
@@ -127,6 +140,27 @@ export default function Vouchers() {
       PUK: '',
     },
     validate: yupResolver(schema),
+  })
+
+  const { mutate: upload, variables: uploading, isPending: isUploading } = useMutation({
+    mutationFn: async (values) => {
+      await api.post('batchOrder', { values }).json()
+    },
+
+    onSuccess: (data: GetResponse<Voucher>) => {
+      queryClient.invalidateQueries({ queryKey: ['voucher'] })
+      // @ts-expect-error Inconsistent typing from API
+      notifications.show({ message: `Successfully uploaded CSV` })
+      formClose()
+    },
+  })
+
+  const batchOrderForm = useForm({
+    initialValues: {
+      batch_id: '',
+      product_id: '',
+      file: [],
+    },
   })
 
   const VouchersTable = ({ _vouchers }: { _vouchers: Voucher[] }) => {
@@ -172,10 +206,10 @@ export default function Vouchers() {
                     loading={saving?.values.serial === row.serial}
                     onClick={(e) => {
                       e.stopPropagation()
-                      form.setValues({ ...row,
+                      voucherForm.setValues({ ...row,
                         // Date = YYYY-MM-DD. Convert to valid date
                         expire_date: row.expire_date ? new Date(`${row.expire_date}T00:00:00`) as unknown as string : undefined })
-                      open(`Edit ${row.serial}`, row.serial)
+                      formOpen(`Edit ${row.serial}`, row.serial)
                     }}
                   >
                     Edit
@@ -211,53 +245,53 @@ export default function Vouchers() {
 
   return (
     <>
-      <Modal size="lg" {...modalProps}>
-        <form onSubmit={form.onSubmit(values => save({ values, id }))}>
+      <Modal size="lg" {...formModalProps}>
+        <form onSubmit={voucherForm.onSubmit(values => save({ values, id: formId }))}>
           <Grid>
             <Grid.Col span={6}>
-              <TextInput required label="Serial number" {...form.getInputProps('serial')} />
+              <TextInput required label="Serial number" {...voucherForm.getInputProps('serial')} />
             </Grid.Col>
             <Grid.Col span={6}>
-              <NumberInput required min={0} label="Value" {...form.getInputProps('value')} />
+              <NumberInput required min={0} label="Value" {...voucherForm.getInputProps('value')} />
             </Grid.Col>
             <Grid.Col span={6}>
               <Select
                 searchable
                 clearable
                 label="Product reference"
-                {...form.getInputProps('product_code')}
+                {...voucherForm.getInputProps('product_code')}
                 data={records?.products?.map(({ product_code, product_name }) => ({ label: product_name, value: product_code }))}
               />
             </Grid.Col>
             <Grid.Col span={6}>
-              <TextInput label="Product ID" {...form.getInputProps('product_id')} />
+              <TextInput label="Product ID" {...voucherForm.getInputProps('product_id')} />
             </Grid.Col>
             <Grid.Col span={6}>
-              <TextInput required label="Service reference" {...form.getInputProps('service_reference')} />
+              <TextInput required label="Service reference" {...voucherForm.getInputProps('service_reference')} />
             </Grid.Col>
             <Grid.Col span={6}>
-              <DateInput clearable label="Expiry date" {...form.getInputProps('expire_date')} />
+              <DateInput clearable label="Expiry date" {...voucherForm.getInputProps('expire_date')} />
             </Grid.Col>
             <Grid.Col span={6}>
-              <TextInput required label="Business unit" {...form.getInputProps('business_unit')} />
+              <TextInput required label="Business unit" {...voucherForm.getInputProps('business_unit')} />
             </Grid.Col>
             <Grid.Col span={6}>
-              <TextInput required label="IMEI" {...form.getInputProps('IMEI')} />
+              <TextInput required label="IMEI" {...voucherForm.getInputProps('IMEI')} />
             </Grid.Col>
             <Grid.Col span={6}>
-              <TextInput required label="IMSI" {...form.getInputProps('IMSI')} />
+              <TextInput required label="IMSI" {...voucherForm.getInputProps('IMSI')} />
             </Grid.Col>
             <Grid.Col span={6}>
-              <TextInput required label="SIM narrative" {...form.getInputProps('SIMNarrative')} />
+              <TextInput required label="SIM narrative" {...voucherForm.getInputProps('SIMNarrative')} />
             </Grid.Col>
             <Grid.Col span={6}>
-              <TextInput required label="SIM number" {...form.getInputProps('SIMNo')} />
+              <TextInput required label="SIM number" {...voucherForm.getInputProps('SIMNo')} />
             </Grid.Col>
             <Grid.Col span={3}>
-              <TextInput required label="PUK" {...form.getInputProps('PUK')} />
+              <TextInput required label="PUK" {...voucherForm.getInputProps('PUK')} />
             </Grid.Col>
             <Grid.Col span={3}>
-              <TextInput required label="PCN" {...form.getInputProps('PCN')} />
+              <TextInput required label="PCN" {...voucherForm.getInputProps('PCN')} />
             </Grid.Col>
             <Grid.Col span={12}>
               <Group mt="sm" justify="end">
@@ -268,15 +302,42 @@ export default function Vouchers() {
         </form>
       </Modal>
 
-      <Modal>
+      <Modal {...modalProps}>
+        <form onSubmit={batchOrderForm.onSubmit(values => upload(values))}>
+          <Grid>
+            <Grid.Col span={12}>
+              <TextInput required label="Batch ID" {...batchOrderForm.getInputProps('batch_id')} />
+            </Grid.Col>
+            {/* <Grid.Col span={12}> */}
+            {/*  <TextInput required label="Product ID" {...batchOrderForm.getInputProps('product_id')} /> */}
+            {/* </Grid.Col> */}
+            <Grid.Col span={12}>
+              <FileInput accept="csv" label="Upload files" {...batchOrderForm.getInputProps('file')} placeholder="Select CSV file" />
+            </Grid.Col>
+            <Grid.Col span={12}>
+              <Group mt="sm" justify="end">
+                <Button loading={isUploading} type="submit">Upload</Button>
+              </Group>
+            </Grid.Col>
+          </Grid>
+        </form>
       </Modal>
 
       <AppHeader title="Vouchers">
         <Button
+          variant="default"
           leftSection={<IconPlus size={16} />}
           onClick={() => {
-            form.reset()
-            open('Add voucher')
+            open('Upload CSV')
+          }}
+        >
+          Upload CSV
+        </Button>
+        <Button
+          leftSection={<IconPlus size={16} />}
+          onClick={() => {
+            voucherForm.reset()
+            formOpen('Add voucher')
           }}
         >
           Add voucher
