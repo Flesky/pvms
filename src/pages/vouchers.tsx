@@ -2,9 +2,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { notifications } from '@mantine/notifications'
 import * as yup from 'yup'
 import { useForm, yupResolver } from '@mantine/form'
-import { Button, Grid, Group, Modal, NumberInput, Select, TextInput } from '@mantine/core'
+import { Button, Grid, Group, Modal, NumberInput, Pill, SegmentedControl, Select, Stack, TextInput } from '@mantine/core'
 import { IconPlus } from '@tabler/icons-react'
 import { DateInput } from '@mantine/dates'
+import { useState } from 'react'
 import useModal from '../hooks/useModal.ts'
 import api from '../utils/api.ts'
 import type { GetAllResponse, GetResponse, Result } from '../types'
@@ -12,55 +13,69 @@ import AppHeader from '../components/AppHeader.tsx'
 import AppClientTable from '../components/AppClientTable.tsx'
 import type { Product } from './products.tsx'
 
-interface Voucher extends Result {
-  voucher_code: string
-  product_code_reference: string
-  expiry_date: string
+export interface Voucher extends Result {
+  expire_date: string
   value: number
-  available?: number
-  serviceID: string
-  business_unit: string
-  serial_number: string
+  deplete_date: string
+  serial: string
+  product_code: string
+  product_id: number
   IMEI: string
   SIMNarrative: string
+  PCN: string
   SIMNo: string
-  IMSI: string
   PUK: string
+  IMSI: string
+  available: number
+  service_reference: string
+  business_unit: string
+  batch_id: number
+}
+
+interface BatchOrder extends Result {
+  batch_id: number
+  product_id: number
+  batch_count: number
+  voucher: Voucher[]
 }
 
 const schema = yup.object().shape({
-  voucher_code: yup.string().required(),
-  product_code_reference: yup.string().nullable(),
+  // product_id: yup.string().nullable(),
+  expire_date: yup.date().nullable(),
   value: yup.number().min(0),
-  expiry_date: yup.date().nullable(),
-
-  serviceID: yup.string().required(),
-  business_unit: yup.string().required(),
-  serial_number: yup.string().required(),
+  serial: yup.string().required(),
+  product_code: yup.string().nullable(),
   IMEI: yup.string().required(),
   SIMNarrative: yup.string().required(),
   SIMNo: yup.string().required(),
-  IMSI: yup.string().required(),
+  PCN: yup.string().required(),
   PUK: yup.string().required(),
+  IMSI: yup.string().required(),
+  service_reference: yup.string().required(),
+  business_unit: yup.string().required(),
+  batch_id: yup.string().required(),
 })
 
 export default function Vouchers() {
   const { open, close, id, modalProps } = useModal()
   const queryClient = useQueryClient()
+  const [view, setView] = useState<'all' | 'batch' | number>('all')
 
   const { data: records, isPending } = useQuery({
     queryKey: ['voucher'],
     queryFn: async () => {
-      const [vouchers, products] = await Promise.all([
-        api.get('getAllVouchers').json() as GetAllResponse<Voucher>,
-        api.get('product').json() as GetAllResponse<Product>,
+      const [batchOrders, products] = await Promise.all([
+        api.get('batchOrder').json() as Promise<GetAllResponse<BatchOrder>>,
+        // api.get('getAllVouchers').json() as Promise<GetAllResponse<Voucher>>,
+        api.get('product').json() as Promise<GetAllResponse<Product>>,
       ])
       // eslint-disable-next-line ts/no-use-before-define
       resetSave()
       // eslint-disable-next-line ts/no-use-before-define
       resetToggle()
       return {
-        vouchers: vouchers.results,
+        batchOrders: batchOrders.results,
+        vouchers: batchOrders.results.flatMap(({ voucher }) => voucher),
         products: products.results,
       }
     },
@@ -70,7 +85,7 @@ export default function Vouchers() {
     mutationFn: async ({ values, id }: { values: Voucher, id?: string }) => {
       const json = {
         ...values,
-        expiry_date: values.expiry_date ? (values.expiry_date as unknown as Date).toISOString().split('T')[0] : undefined,
+        expire_date: values.expire_date ? (values.expire_date as unknown as Date).toISOString().split('T')[0] : undefined,
       }
 
       return !id
@@ -79,30 +94,32 @@ export default function Vouchers() {
     },
     onSuccess: (data: GetResponse<Voucher>) => {
       queryClient.invalidateQueries({ queryKey: ['voucher'] })
-      notifications.show({ message: `Successfully saved voucher: ${data.results.voucher_code || data.results[0].voucher_code}` })
+      // @ts-expect-error Inconsistent typing from API
+      notifications.show({ message: `Successfully saved voucher: ${data.results.serial || data.results[0].serial}` })
       close()
     },
   })
 
   const { mutate: toggle, variables: toggling, reset: resetToggle } = useMutation({
-    mutationFn: async (values: Voucher) => await api.patch(`set${values.available ? 'Inactive' : 'Active'}/${values.voucher_code}`).json() as GetResponse<Voucher>,
+    mutationFn: async (values: Voucher) => await api.patch(`set${values.available ? 'Inactive' : 'Active'}/${values.serial}`).json() as GetResponse<Voucher>,
     onSuccess: (data: GetResponse<Voucher>) => {
       queryClient.invalidateQueries({ queryKey: ['voucher'] })
-      notifications.show({ message: `Successfully ${data.results.available ? 'activated' : 'deactivated'} voucher: ${data.results.voucher_code}` })
+      notifications.show({ message: `Successfully ${data.results.available ? 'activated' : 'deactivated'} voucher: ${data.results.serial}` })
       close()
     },
   })
 
   const form = useForm({
     initialValues: {
-      voucher_code: '',
-      product_code_reference: '',
+      product_code: '',
+      product_id: '',
       value: 0,
-      expiry_date: '',
+      serial: '',
+      expire_date: '',
 
-      serviceID: '',
+      service_reference: '',
       business_unit: '',
-      serial_number: '',
+      PCN: '',
       IMEI: '',
       SIMNarrative: '',
       SIMNo: '',
@@ -112,79 +129,15 @@ export default function Vouchers() {
     validate: yupResolver(schema),
   })
 
-  return (
-    <>
-      <Modal {...modalProps}>
-        <form onSubmit={form.onSubmit(values => save({ values, id }))}>
-          <Grid>
-            <Grid.Col span={12}>
-              <TextInput disabled={!!id} required data-autofocus label="Voucher code" {...form.getInputProps('voucher_code')} />
-            </Grid.Col>
-            <Grid.Col span={12}>
-              <NumberInput required min={0} label="Value" {...form.getInputProps('value')} />
-            </Grid.Col>
-            <Grid.Col span={12}>
-              <Select
-                searchable
-                clearable
-                label="Product code"
-                {...form.getInputProps('product_code_reference')}
-                data={records?.products?.map(({ product_code, product_name }) => ({ label: `${product_code} - ${product_name}`, value: product_code }))}
-              />
-            </Grid.Col>
-            <Grid.Col span={12}>
-              <DateInput clearable label="Expiry date" {...form.getInputProps('expiry_date')} />
-            </Grid.Col>
-            <Grid.Col span={12}>
-              <TextInput required label="Service ID" {...form.getInputProps('serviceID')} />
-            </Grid.Col>
-            <Grid.Col span={12}>
-              <TextInput required label="Business unit" {...form.getInputProps('business_unit')} />
-            </Grid.Col>
-            <Grid.Col span={12}>
-              <TextInput required label="Serial number" {...form.getInputProps('serial_number')} />
-            </Grid.Col>
-            <Grid.Col span={12}>
-              <TextInput required label="IMEI" {...form.getInputProps('IMEI')} />
-            </Grid.Col>
-            <Grid.Col span={12}>
-              <TextInput required label="SIM Narrative" {...form.getInputProps('SIMNarrative')} />
-            </Grid.Col>
-            <Grid.Col span={12}>
-              <TextInput required label="SIM number" {...form.getInputProps('SIMNo')} />
-            </Grid.Col>
-            <Grid.Col span={12}>
-              <TextInput required label="IMSI" {...form.getInputProps('IMSI')} />
-            </Grid.Col>
-            <Grid.Col span={12}>
-              <TextInput required label="PUK" {...form.getInputProps('PUK')} />
-            </Grid.Col>
-            <Grid.Col span={12}>
-              <Group mt="sm" justify="end">
-                <Button loading={isSaving} type="submit">Save</Button>
-              </Group>
-            </Grid.Col>
-          </Grid>
-        </form>
-      </Modal>
-      <AppHeader title="Vouchers">
-        <Button
-          leftSection={<IconPlus size={16} />}
-          onClick={() => {
-            form.reset()
-            open('Add voucher')
-          }}
-        >
-          Add voucher
-        </Button>
-      </AppHeader>
-      <AppClientTable<Voucher>
+  const VouchersTable = ({ _vouchers }: { _vouchers: Voucher[] }) => {
+    return (
+      <AppClientTable
         id="vouchers"
         tableProps={{
-          records: records?.vouchers,
+          records: _vouchers,
           fetching: isPending,
           columns: [
-            { accessor: 'voucher_code',
+            { accessor: 'serial',
               // render: ({ voucher_code }) => (
               //   <Group wrap="nowrap">
               //     <IconChevronRight size={16} />
@@ -193,13 +146,13 @@ export default function Vouchers() {
               // )
             },
             {
-              accessor: 'product_code_reference',
+              accessor: 'product_code',
             },
-            { accessor: 'expiry_date' },
+            { accessor: 'expire_date' },
+            { accessor: 'depleted', render: ({ available, deplete_date }) => available ? 'No' : deplete_date || 'Yes' },
             { accessor: 'value' },
-            { accessor: 'serviceID', title: 'Service ID' },
+            { accessor: 'service_reference', title: 'Service reference' },
             { accessor: 'business_unit' },
-            { accessor: 'serial_number' },
             { accessor: 'IMEI', title: 'IMEI' },
             { accessor: 'SIMNarrative', title: 'Narrative' },
             { accessor: 'SIMNo', title: 'SIM number' },
@@ -216,13 +169,13 @@ export default function Vouchers() {
                     size="xs"
                     variant="light"
                     color="gray"
-                    loading={saving?.id === row.voucher_code}
+                    loading={saving?.values.serial === row.serial}
                     onClick={(e) => {
                       e.stopPropagation()
                       form.setValues({ ...row,
-                      // Date = YYYY-MM-DD. Convert to valid date
-                        expiry_date: row.expiry_date ? new Date(`${row.expiry_date}T00:00:00`) as unknown as string : undefined })
-                      open(`Edit ${row.voucher_code}`, row.voucher_code)
+                        // Date = YYYY-MM-DD. Convert to valid date
+                        expire_date: row.expire_date ? new Date(`${row.expire_date}T00:00:00`) as unknown as string : undefined })
+                      open(`Edit ${row.serial}`, row.serial)
                     }}
                   >
                     Edit
@@ -230,7 +183,7 @@ export default function Vouchers() {
                   <Button
                     size="xs"
                     variant="light"
-                    loading={toggling?.voucher_code === row.voucher_code}
+                    loading={toggling?.serial === row.serial}
                     color={row.available ? 'red' : 'green'}
                     onClick={(e) => {
                       e.stopPropagation()
@@ -251,7 +204,148 @@ export default function Vouchers() {
           //   content: ({ record }) => (<VoucherCodes code={record.voucher_code} />),
           // },
         }}
-      />
+      >
+      </AppClientTable>
+    )
+  }
+
+  return (
+    <>
+      <Modal size="lg" {...modalProps}>
+        <form onSubmit={form.onSubmit(values => save({ values, id }))}>
+          <Grid>
+            <Grid.Col span={6}>
+              <TextInput required label="Serial number" {...form.getInputProps('serial')} />
+            </Grid.Col>
+            <Grid.Col span={6}>
+              <NumberInput required min={0} label="Value" {...form.getInputProps('value')} />
+            </Grid.Col>
+            <Grid.Col span={6}>
+              <Select
+                searchable
+                clearable
+                label="Product reference"
+                {...form.getInputProps('product_code')}
+                data={records?.products?.map(({ product_code, product_name }) => ({ label: product_name, value: product_code }))}
+              />
+            </Grid.Col>
+            <Grid.Col span={6}>
+              <TextInput label="Product ID" {...form.getInputProps('product_id')} />
+            </Grid.Col>
+            <Grid.Col span={6}>
+              <TextInput required label="Service reference" {...form.getInputProps('service_reference')} />
+            </Grid.Col>
+            <Grid.Col span={6}>
+              <DateInput clearable label="Expiry date" {...form.getInputProps('expire_date')} />
+            </Grid.Col>
+            <Grid.Col span={6}>
+              <TextInput required label="Business unit" {...form.getInputProps('business_unit')} />
+            </Grid.Col>
+            <Grid.Col span={6}>
+              <TextInput required label="IMEI" {...form.getInputProps('IMEI')} />
+            </Grid.Col>
+            <Grid.Col span={6}>
+              <TextInput required label="IMSI" {...form.getInputProps('IMSI')} />
+            </Grid.Col>
+            <Grid.Col span={6}>
+              <TextInput required label="SIM narrative" {...form.getInputProps('SIMNarrative')} />
+            </Grid.Col>
+            <Grid.Col span={6}>
+              <TextInput required label="SIM number" {...form.getInputProps('SIMNo')} />
+            </Grid.Col>
+            <Grid.Col span={3}>
+              <TextInput required label="PUK" {...form.getInputProps('PUK')} />
+            </Grid.Col>
+            <Grid.Col span={3}>
+              <TextInput required label="PCN" {...form.getInputProps('PCN')} />
+            </Grid.Col>
+            <Grid.Col span={12}>
+              <Group mt="sm" justify="end">
+                <Button loading={isSaving} type="submit">Save</Button>
+              </Group>
+            </Grid.Col>
+          </Grid>
+        </form>
+      </Modal>
+
+      <Modal>
+      </Modal>
+
+      <AppHeader title="Vouchers">
+        <Button
+          leftSection={<IconPlus size={16} />}
+          onClick={() => {
+            form.reset()
+            open('Add voucher')
+          }}
+        >
+          Add voucher
+        </Button>
+      </AppHeader>
+
+      <Stack gap={0} h="100%">
+        <Group px="md" className="border-b" py="sm">
+          <SegmentedControl
+            value={view}
+            onChange={setView}
+            data={[
+              { label: 'All', value: 'all' },
+              { label: 'View by batch', value: 'batch' },
+
+              // Conditional based on if view is a number/batch ID
+              // ...(!['all', 'batch'].includes(view) ? [{ label: `Batch ${view}`, value: view }] : []),
+            ]}
+          >
+          </SegmentedControl>
+          {(view !== 'all' && view !== 'batch')
+
+          && (
+            <Pill withRemoveButton onRemove={() => setView('batch')}>
+              Viewing batch
+              {' '}
+              {view}
+            </Pill>
+          )}
+        </Group>
+
+        {(view === 'batch')
+          ? (
+            <AppClientTable
+              id="batchOrders"
+              tableProps={{
+                records: records?.batchOrders,
+                fetching: isPending,
+                columns: [
+                  { accessor: 'batch_id', title: 'Batch ID' },
+                  { accessor: 'product_id', title: 'Product ID' },
+                  { accessor: 'batch_count', title: 'Voucher count' },
+                  { accessor: 'actions', title: 'Actions', textAlign: 'right', render: ({ batch_id }) => (
+                    <Button
+                      size="xs"
+                      variant="light"
+                      color="gray"
+                      onClick={() => {
+                        setView(batch_id)
+                      }}
+                    >
+                      View
+                    </Button>
+                  ) },
+                ],
+              }}
+            >
+            </AppClientTable>
+            )
+          : (
+            <VouchersTable _vouchers={view === 'all'
+              ? records?.vouchers
+              : records?.batchOrders.find(
+                ({ batch_id }) => batch_id === view,
+              )?.voucher || []}
+            >
+            </VouchersTable>
+            ) }
+      </Stack>
     </>
   )
 }

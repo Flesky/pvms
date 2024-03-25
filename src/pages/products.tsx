@@ -13,14 +13,16 @@ import type { GetAllResponse, GetResponse, Result } from '../types'
 
 export interface Product extends Result {
   product_code: string
-  product_type: string
+  product_id: number
   product_name: string
+  supplier: string
 }
 
 const schema = yup.object().shape({
   product_code: yup.string().required(),
-  product_type: yup.string().required(),
+  product_id: yup.number().required(),
   product_name: yup.string().required(),
+  supplier: yup.string().required(),
 })
 
 export default function Products() {
@@ -61,6 +63,7 @@ export default function Products() {
       product_code: '',
       product_type: '',
       product_name: '',
+      supplier: '',
     },
     validate: yupResolver(schema),
   })
@@ -69,14 +72,16 @@ export default function Products() {
     <>
       <Modal {...modalProps}>
         <form onSubmit={form.onSubmit(values => save({ values, id }))}>
-          <TextInput data-autofocus label="Product code" {...form.getInputProps('product_code')} />
-          <TextInput mt="sm" label="Product type" {...form.getInputProps('product_type')} />
-          <TextInput mt="sm" label="Product name" {...form.getInputProps('product_name')} />
+          <TextInput required data-autofocus label="Product code" {...form.getInputProps('product_code')} />
+          <TextInput required mt="sm" label="Product type" {...form.getInputProps('product_type')} />
+          <TextInput required mt="sm" label="Product name" {...form.getInputProps('product_name')} />
+          <TextInput required mt="sm" label="Supplier" {...form.getInputProps('supplier')} />
           <Group mt="xl" justify="end">
             <Button loading={isSaving} type="submit">Save</Button>
           </Group>
         </form>
       </Modal>
+
       <AppHeader title="Products">
         <Button
           leftSection={<IconPlus size={16} />}
@@ -96,9 +101,11 @@ export default function Products() {
           columns: [
             { accessor: 'product_code' },
             {
-              accessor: 'product_type',
+              accessor: 'product_id',
+              title: 'Product ID',
             },
             { accessor: 'product_name' },
+            { accessor: 'supplier' },
             {
               accessor: 'actions',
               title: 'Actions',
