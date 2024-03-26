@@ -164,6 +164,7 @@ export default function Vouchers() {
     initialValues: {
       batch_id: '',
       product_id: '',
+      batch_count: 0,
       file: [],
     },
   })
@@ -321,6 +322,9 @@ export default function Vouchers() {
                 {...batchOrderForm.getInputProps('product_id')}
                 data={records?.products?.map(({ product_id, product_name }) => ({ label: product_name, value: String(product_id) }))}
               />
+            </Grid.Col>
+            <Grid.Col span={12}>
+              <NumberInput required min={0} label="Batch count" {...voucherForm.getInputProps('batch_count')} />
             </Grid.Col>
             <Grid.Col span={12}>
               <FileInput accept="csv" label="Upload files" {...batchOrderForm.getInputProps('file')} placeholder="Select CSV file" />
