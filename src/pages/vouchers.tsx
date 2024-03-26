@@ -325,7 +325,7 @@ export default function Vouchers() {
               />
             </Grid.Col>
             <Grid.Col span={12}>
-              <NumberInput required min={0} label="Batch count" {...voucherForm.getInputProps('batch_count')} />
+              <NumberInput required min={0} label="Batch count" {...batchOrderForm.getInputProps('batch_count')} />
             </Grid.Col>
             <Grid.Col span={12}>
               <FileInput accept="csv" label="Upload files" {...batchOrderForm.getInputProps('file')} placeholder="Select CSV file" />
