@@ -26,7 +26,7 @@ const schema = yup.object().shape({
 })
 
 export default function Products() {
-  const { open, close, formId, modalProps } = useModal()
+  const { open, close, id, modalProps } = useModal()
   const queryClient = useQueryClient()
 
   const { data: records, isPending } = useQuery({
@@ -61,7 +61,7 @@ export default function Products() {
   const form = useForm({
     initialValues: {
       product_code: '',
-      product_type: '',
+      product_id: 0,
       product_name: '',
       supplier: '',
     },
@@ -71,9 +71,9 @@ export default function Products() {
   return (
     <>
       <Modal {...modalProps}>
-        <form onSubmit={form.onSubmit(values => save({ values, id: formId }))}>
+        <form onSubmit={form.onSubmit(values => save({ values, id }))}>
           <TextInput required data-autofocus label="Product code" {...form.getInputProps('product_code')} />
-          <TextInput required mt="sm" label="Product type" {...form.getInputProps('product_type')} />
+          <TextInput required mt="sm" label="Product ID" {...form.getInputProps('product_id')} />
           <TextInput required mt="sm" label="Product name" {...form.getInputProps('product_name')} />
           <TextInput required mt="sm" label="Supplier" {...form.getInputProps('supplier')} />
           <Group mt="xl" justify="end">
