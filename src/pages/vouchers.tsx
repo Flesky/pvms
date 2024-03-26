@@ -146,6 +146,7 @@ export default function Vouchers() {
     mutationFn: async (values) => {
       const formData = new FormData()
       formData.append('batch_id', values.batch_id)
+      formData.append('batch_count', values.batch_count)
       formData.append('product_id', Number(values.product_id))
       console.log(values.product_id)
       formData.append('file', values.file)
