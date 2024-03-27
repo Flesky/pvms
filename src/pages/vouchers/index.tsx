@@ -33,19 +33,31 @@ export interface Voucher extends Result {
 }
 
 const schema = object().shape({
+  // serial: string().required(),
+  // expire_date: string().nullable(),
+  // value: number().min(0),
+  // product_code: string().nullable(),
+  // IMEI: string().required(),
+  // SIMNarrative: string().required(),
+  // SIMNo: string().required(),
+  // PCN: string().required(),
+  // PUK: string().required(),
+  // IMSI: string().required(),
+  // service_reference: string().required(),
+  // business_unit: string().required(),
+
   serial: string().required(),
-  // ISO with time date format
   expire_date: string().nullable(),
   value: number().min(0),
-  product_code: string().nullable(),
-  IMEI: string().required(),
-  SIMNarrative: string().required(),
-  SIMNo: string().required(),
-  PCN: string().required(),
+  product_code: string().required(),
+  IMEI: string().nullable(),
+  SIMNarrative: string().nullable(),
+  SIMNo: string().nullable(),
+  PCN: string().nullable(),
   PUK: string().required(),
-  IMSI: string().required(),
-  service_reference: string().required(),
-  business_unit: string().required(),
+  IMSI: string().nullable(),
+  service_reference: string().nullable(),
+  business_unit: string().nullable(),
 })
 
 export default function VouchersOld() {
@@ -134,7 +146,7 @@ export default function VouchersOld() {
             <Grid.Col span={6}>
               <Select
                 searchable
-                clearable
+                required
                 label="Product reference"
                 {...form.getInputProps('product_code')}
                 data={data?.products?.map(({ product_code, product_name }) => ({ label: product_name, value: product_code }))}

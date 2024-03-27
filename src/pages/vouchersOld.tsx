@@ -59,19 +59,19 @@ interface BatchOrder extends Result {
 
 const schema = yup.object().shape({
   // product_id: yup.string().nullable(),
-  expire_date: yup.date().nullable(),
+  expire_date: yup.string().nullable(),
   value: yup.number().min(0),
   serial: yup.string().required(),
-  product_code: yup.string().nullable(),
-  IMEI: yup.string().required(),
-  SIMNarrative: yup.string().required(),
-  SIMNo: yup.string().required(),
-  PCN: yup.string().required(),
+  product_code: yup.string().required(),
+  IMEI: yup.string().nullable(),
+  SIMNarrative: yup.string().nullable(),
+  SIMNo: yup.string().nullable(),
+  PCN: yup.string().nullable(),
   PUK: yup.string().required(),
-  IMSI: yup.string().required(),
-  service_reference: yup.string().required(),
-  business_unit: yup.string().required(),
-  batch_id: yup.string().required(),
+  IMSI: yup.string().nullable(),
+  service_reference: yup.string().nullable(),
+  business_unit: yup.string().nullable(),
+  batch_id: yup.string().nullable(),
 })
 
 export default function VouchersOld() {
@@ -168,24 +168,7 @@ export default function VouchersOld() {
 
     onError: (error) => {
       error.response.json().then(({ errors }) => {
-        // "errors": {
-        //   "1": {
-        //     "serial": [
-        //       "The serial has already been taken."
-        //     ],
-        //       "PUK": [
-        //       "The p u k has already been taken."
-        //     ]
-        //   },
-        //   "2": {
-        //     "serial": [
-        //       "The serial has already been taken."
-        //     ],
-        //       "PUK": [
-        //       "The p u k has already been taken."
-        //     ]
-        //   }
-        // }
+        console.log(errors)
 
         setUploadErrors(
           Object.entries(errors).map(([key, value]) => (
@@ -302,11 +285,12 @@ export default function VouchersOld() {
               <TextInput required label="Serial number" {...voucherForm.getInputProps('serial')} />
             </Grid.Col>
             <Grid.Col span={6}>
-              <NumberInput required min={0} label="Value" {...voucherForm.getInputProps('value')} />
+              <NumberInput min={0} label="Value" {...voucherForm.getInputProps('value')} />
             </Grid.Col>
             <Grid.Col span={6}>
               <Select
                 searchable
+                required
                 clearable
                 label="Product reference"
                 {...voucherForm.getInputProps('product_code')}
@@ -317,31 +301,31 @@ export default function VouchersOld() {
               <TextInput label="Product ID" {...voucherForm.getInputProps('product_id')} />
             </Grid.Col>
             <Grid.Col span={6}>
-              <TextInput required label="Service reference" {...voucherForm.getInputProps('service_reference')} />
+              <TextInput label="Service reference" {...voucherForm.getInputProps('service_reference')} />
             </Grid.Col>
             <Grid.Col span={6}>
               <DateInput clearable label="Expiry date" {...voucherForm.getInputProps('expire_date')} />
             </Grid.Col>
             <Grid.Col span={6}>
-              <TextInput required label="Business unit" {...voucherForm.getInputProps('business_unit')} />
+              <TextInput label="Business unit" {...voucherForm.getInputProps('business_unit')} />
             </Grid.Col>
             <Grid.Col span={6}>
-              <TextInput required label="IMEI" {...voucherForm.getInputProps('IMEI')} />
+              <TextInput label="IMEI" {...voucherForm.getInputProps('IMEI')} />
             </Grid.Col>
             <Grid.Col span={6}>
-              <TextInput required label="IMSI" {...voucherForm.getInputProps('IMSI')} />
+              <TextInput label="IMSI" {...voucherForm.getInputProps('IMSI')} />
             </Grid.Col>
             <Grid.Col span={6}>
-              <TextInput required label="SIM narrative" {...voucherForm.getInputProps('SIMNarrative')} />
+              <TextInput label="SIM narrative" {...voucherForm.getInputProps('SIMNarrative')} />
             </Grid.Col>
             <Grid.Col span={6}>
-              <TextInput required label="SIM number" {...voucherForm.getInputProps('SIMNo')} />
+              <TextInput label="SIM number" {...voucherForm.getInputProps('SIMNo')} />
             </Grid.Col>
             <Grid.Col span={3}>
               <TextInput required label="PUK" {...voucherForm.getInputProps('PUK')} />
             </Grid.Col>
             <Grid.Col span={3}>
-              <TextInput required label="PCN" {...voucherForm.getInputProps('PCN')} />
+              <TextInput label="PCN" {...voucherForm.getInputProps('PCN')} />
             </Grid.Col>
             <Grid.Col span={12}>
               <Group mt="sm" justify="end">
@@ -398,6 +382,8 @@ export default function VouchersOld() {
           variant="default"
           leftSection={<IconPlus size={16} />}
           onClick={() => {
+            batchOrderForm.reset()
+            setUploadErrors(undefined)
             open('Upload CSV')
           }}
         >
