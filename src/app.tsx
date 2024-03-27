@@ -31,35 +31,68 @@ function Layout() {
       <AppShell.Navbar>
         <Box bg="accent" p="md">
           <Group mt="md" justify="space-between">
-            <img className="w-32" src="pivotel.png" alt="Pivotel logo" />
+            <img className="w-32" src="/pivotel.png" alt="Pivotel logo" />
             <Burger color="white" opened={true} onClick={toggleMobile} hiddenFrom="sm" size="sm" />
           </Group>
           <Text mt="6px" mb="xl" c="white">Voucher Management System</Text>
         </Box>
         <Stack p="md" className="h-full" justify="space-between">
           <div>
-            {navLinks.map(item => (
-              <NavLink
-                classNames={{
-                  root: 'px-3 py-2.5 group rounded',
-                  label: 'font-medium',
-                }}
-                styles={{
-                  root: {
-                  },
-                }}
-                onClick={() => {
-                  if (pathname !== item.to)
-                    toggleMobile()
-                }}
-                active={!!matchPath(pathname, item.to)}
-                leftSection={<item.icon />}
-                component={RouterNavLink}
-                label={item.label}
-                key={item.to}
-                to={item.to}
-              />
-            ))}
+            {navLinks.map((item) => {
+              if ('to' in item) {
+                return (
+                  <NavLink
+                    classNames={{
+                      root: 'px-3 py-2.5 group rounded',
+                      label: 'font-medium',
+                    }}
+                    onClick={() => {
+                      if (pathname !== item.to)
+                        toggleMobile()
+                    }}
+                    active={!!matchPath(pathname, item.to)}
+                    to={item.to}
+                    leftSection={<item.icon />}
+                    component={RouterNavLink}
+                    label={item.label}
+                    key={item.label}
+                  />
+                )
+              }
+              else {
+                return (
+                  <NavLink
+                    classNames={{
+                      root: 'px-3 py-2.5 group rounded',
+                      label: 'font-medium',
+                    }}
+                    childrenOffset={36}
+                    leftSection={<item.icon />}
+                    label={item.label}
+                    key={item.label}
+                    defaultOpened={!!item.children?.some(child => matchPath(pathname, child.to))}
+                  >
+                    {item.children?.map(child => (
+                      <NavLink
+                        classNames={{
+                          root: 'px-3 py-2.5 group rounded',
+                          label: 'font-medium',
+                        }}
+                        onClick={() => {
+                          if (pathname !== child.to)
+                            toggleMobile()
+                        }}
+                        active={!!matchPath(pathname, child.to)}
+                        to={child.to}
+                        component={RouterNavLink}
+                        label={child.label}
+                        key={child.label}
+                      />
+                    ))}
+                  </NavLink>
+                )
+              }
+            })}
           </div>
           <Button
             onClick={async () => {

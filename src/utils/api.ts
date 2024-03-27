@@ -15,7 +15,8 @@ const api = ky.create({
     ],
     beforeError: [
       async (error) => {
-        const response = await error.response.json()
+        const clone = error.response.clone()
+        const response = await clone.json()
         console.log(response)
         notifications.show({ message: response.message })
         return error

@@ -31,10 +31,7 @@ export default function Products() {
 
   const { data: records, isPending } = useQuery({
     queryKey: ['product'],
-    queryFn: async () => {
-      const res = await api.get('product').json() as GetAllResponse<Product>
-      return res.results
-    },
+    queryFn: async () => (await api.get('product').json<GetAllResponse<Product>>()).results,
   })
 
   const { mutate: save, isPending: isSaving } = useMutation({

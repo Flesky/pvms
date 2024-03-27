@@ -3,6 +3,8 @@ import { notifications } from '@mantine/notifications'
 import * as yup from 'yup'
 import { useForm, yupResolver } from '@mantine/form'
 import {
+  Accordion,
+  Alert,
   Button,
   FileInput,
   Grid,
@@ -13,11 +15,15 @@ import {
   SegmentedControl,
   Select,
   Stack,
+  Text,
   TextInput,
 } from '@mantine/core'
-import { IconPlus } from '@tabler/icons-react'
+import { IconInfoCircle, IconPlus } from '@tabler/icons-react'
 import { DateInput } from '@mantine/dates'
+import type { ReactNode } from 'react'
 import { useState } from 'react'
+
+import type { InferType } from 'yup'
 import useModal from '../hooks/useModal.ts'
 import api from '../utils/api.ts'
 import type { GetAllResponse, GetResponse, Result } from '../types'
@@ -68,11 +74,12 @@ const schema = yup.object().shape({
   batch_id: yup.string().required(),
 })
 
-export default function Vouchers() {
+export default function VouchersOld() {
   const { open: formOpen, close: formClose, id: formId, modalProps: formModalProps } = useModal()
   const { open, close, id, modalProps } = useModal()
   const queryClient = useQueryClient()
   const [view, setView] = useState<'all' | 'batch' | number>('all')
+  const [uploadErrors, setUploadErrors] = useState<ReactNode>(undefined)
 
   const { data: records, isPending } = useQuery({
     queryKey: ['voucher'],
@@ -95,7 +102,7 @@ export default function Vouchers() {
   })
 
   const { mutate: save, variables: saving, isPending: isSaving, reset: resetSave } = useMutation({
-    mutationFn: async ({ values, id }: { values: Voucher, id?: string }) => {
+    mutationFn: async ({ values, id }: { values: InferType<typeof schema>, id?: string }) => {
       const json = {
         ...values,
         expire_date: values.expire_date ? (values.expire_date as unknown as Date).toISOString().split('T')[0] : undefined,
@@ -148,16 +155,52 @@ export default function Vouchers() {
       formData.append('batch_id', values.batch_id)
       formData.append('batch_count', values.batch_count)
       formData.append('product_id', Number(values.product_id))
-      console.log(values.product_id)
       formData.append('file', values.file)
-      await api.post('batchOrder', { body: formData }).json()
+      return await api.post('batchOrder', { body: formData }).json()
     },
 
     onSuccess: (data: GetResponse<Voucher>) => {
       queryClient.invalidateQueries({ queryKey: ['voucher'] })
-      // @ts-expect-error Inconsistent typing from API
       notifications.show({ message: `Successfully uploaded CSV` })
       formClose()
+      setUploadErrors(undefined)
+    },
+
+    onError: (error) => {
+      error.response.json().then(({ errors }) => {
+        // "errors": {
+        //   "1": {
+        //     "serial": [
+        //       "The serial has already been taken."
+        //     ],
+        //       "PUK": [
+        //       "The p u k has already been taken."
+        //     ]
+        //   },
+        //   "2": {
+        //     "serial": [
+        //       "The serial has already been taken."
+        //     ],
+        //       "PUK": [
+        //       "The p u k has already been taken."
+        //     ]
+        //   }
+        // }
+
+        setUploadErrors(
+          Object.entries(errors).map(([key, value]) => (
+            <Accordion.Item key={key} value={key}>
+              <Accordion.Control>
+                Row
+                {' '}
+                {key}
+              </Accordion.Control>
+              <Accordion.Panel>{Object.values(value).flat().map(text => <Text>{text}</Text>)}</Accordion.Panel>
+            </Accordion.Item>
+          )),
+        )
+      },
+      )
     },
   })
 
@@ -319,6 +362,7 @@ export default function Vouchers() {
               <Select
                 searchable
                 clearable
+                required
                 label="Product reference"
                 {...batchOrderForm.getInputProps('product_id')}
                 data={records?.products?.map(({ product_id, product_name }) => ({ label: product_name, value: String(product_id) }))}
@@ -330,6 +374,16 @@ export default function Vouchers() {
             <Grid.Col span={12}>
               <FileInput accept="csv" label="Upload files" {...batchOrderForm.getInputProps('file')} placeholder="Select CSV file" />
             </Grid.Col>
+            {uploadErrors
+            && (
+              <Grid.Col span={12}>
+                <Alert icon={<IconInfoCircle />} variant="light" color="red" title="Errors found in the file">
+                  <Accordion>
+                    {uploadErrors}
+                  </Accordion>
+                </Alert>
+              </Grid.Col>
+            )}
             <Grid.Col span={12}>
               <Group mt="sm" justify="end">
                 <Button loading={isUploading} type="submit">Upload</Button>
