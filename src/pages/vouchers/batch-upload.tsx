@@ -70,8 +70,9 @@ export default function BatchUploadVouchers() {
     },
     onError: async (error) => {
       const { errors, return_code }: { errors: Record<string, Record<string, Array<string>> | number>, return_code: object | string } = await (error as HTTPError).response.json()
-      if (typeof return_code === 'object' || return_code !== '-206')
+      if (return_code !== '-206')
         return
+
       const { file }: { file: File } = variables!
       const csv = await file.text()
       form.setFieldValue('file', [])
@@ -83,7 +84,11 @@ export default function BatchUploadVouchers() {
           serial,
           puk,
           // If row number + 1 is not in the errors object, return "Pass"
-          status: errors[i + 1] ? `Duplicate ${Object.keys(errors[i + 1]).join(', ')}` : 'Pass',
+          status: errors[i + 1]
+            ? `Duplicate ${Object.keys(errors[i + 1]).map(key =>
+              key.charAt(0).toUpperCase() + key.slice(1),
+            ).join(', ')}`
+            : 'Pass',
         }
       }))
     },
@@ -91,7 +96,7 @@ export default function BatchUploadVouchers() {
 
   return (
     <>
-      <AppHeader title="Batch upload"></AppHeader>
+      <AppHeader title="Batch upload" />
 
       <Container mt="xs" size="lg">
         <form onSubmit={form.onSubmit(values => mutate(values))}>
@@ -124,7 +129,7 @@ export default function BatchUploadVouchers() {
               />
             </div>
 
-            {errorMap && (
+            {errorMap?.length && (
               <Card withBorder>
                 <Alert title="CSV error" color="red" icon={<IconAlertCircle />}>
                   Duplicated records found in the database table. Please fix the issues, then try again.
