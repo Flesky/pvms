@@ -6,8 +6,9 @@ import DefaultLayout from '../app.tsx'
 
 // import Index from '../pages'
 import Products from '../pages/products.tsx'
-import BatchAddVouchers from '@/pages/vouchers/batch-add.tsx'
-import VouchersOld from '@/pages/vouchersOld.tsx'
+import BatchUploadVouchers from '@/pages/vouchers/batch-upload.tsx'
+import Vouchers from '@/pages/vouchers'
+import VouchersOld from "@/pages/vouchersOld.tsx";
 
 interface NavItem {
   to: string
@@ -31,11 +32,11 @@ type NavLinks = (NavItem | NavParent)[]
 const navLinks: NavLinks = [
   // { to: '/', label: 'Home', icon: IconHome },
   { to: '/', label: 'Products', icon: IconBox },
-  { to: '/vouchers', label: 'Vouchers', icon: IconTicket },
-  // { label: 'Vouchers', icon: IconTicket, children: [
-  //   { to: '/vouchers', label: 'View all' },
-  //   { to: '/vouchers/batch', label: 'Batch upload' },
-  // ] },
+  // { to: '/vouchers', label: 'Vouchers', icon: IconTicket },
+  { label: 'Vouchers', icon: IconTicket, children: [
+    { to: '/vouchers', label: 'View all' },
+    { to: '/vouchers/batch', label: 'Batch upload' },
+  ] },
   // { to: '/vouchers/add', label: 'Add VouchersOld', icon: IconTicket },
 ]
 
@@ -47,7 +48,7 @@ const router = createBrowserRouter([
 
       { path: 'vouchers', children: [
         { path: '', element: <VouchersOld /> },
-        { path: 'batch', element: <BatchAddVouchers /> },
+        { path: 'batch', element: <BatchUploadVouchers /> },
       ] },
     ],
     element: <DefaultLayout />,

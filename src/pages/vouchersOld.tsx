@@ -378,17 +378,17 @@ export default function VouchersOld() {
       </Modal>
 
       <AppHeader title="Vouchers">
-        <Button
-          variant="default"
-          leftSection={<IconPlus size={16} />}
-          onClick={() => {
-            batchOrderForm.reset()
-            setUploadErrors(undefined)
-            open('Upload CSV')
-          }}
-        >
-          Upload CSV
-        </Button>
+        {/*<Button*/}
+        {/*  variant="default"*/}
+        {/*  leftSection={<IconPlus size={16} />}*/}
+        {/*  onClick={() => {*/}
+        {/*    batchOrderForm.reset()*/}
+        {/*    setUploadErrors(undefined)*/}
+        {/*    open('Upload CSV')*/}
+        {/*  }}*/}
+        {/*>*/}
+        {/*  Upload CSV*/}
+        {/*</Button>*/}
         <Button
           leftSection={<IconPlus size={16} />}
           onClick={() => {
