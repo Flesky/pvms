@@ -9,6 +9,7 @@ import {
   NumberInput,
   Select,
   Stack,
+  Text,
   TextInput,
 } from '@mantine/core'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -24,6 +25,27 @@ import api from '@/utils/api.ts'
 import type { GetAllResponse } from '@/types'
 import type { Product } from '@/pages/products.tsx'
 import AppClientTable from '@/components/AppClientTable.tsx'
+
+export interface ErrorSchema {
+  message: string
+  return_code: string
+  errors: {
+    batch_id: Array<string>
+    batch_count: Array<string>
+    product_id: Array<string>
+    file: Array<string>
+    rows: {
+      [row: string]: {
+        serial: Array<string>
+        PUK: Array<string>
+      }
+    }
+  }
+  csv: {
+    serial: Array<string>
+    PUK: Array<string>
+  }
+}
 
 const schema = object().shape({
   batch_id: string().required(),
@@ -42,12 +64,12 @@ export default function BatchUploadVouchers() {
       file: [],
     },
   })
-  const [errorMap, setErrorMap] = useState<Array<{
+  const [errorMap, setErrorMap] = useState<{ errors: string[], data: Array<{
     row_number: number
     serial: string
     puk: string
     status: string
-  }>>()
+  }> }>()
 
   const { data: products } = useQuery({
     queryKey: ['product'],
@@ -69,28 +91,26 @@ export default function BatchUploadVouchers() {
       notifications.show({ message: `Successfully uploaded CSV` })
     },
     onError: async (error) => {
-      const { errors, return_code }: { errors: Record<string, Record<string, Array<string>> | number>, return_code: object | string } = await (error as HTTPError).response.json()
-      if (return_code !== '-206')
-        return
+      // const { csv, errors, return_code }: { csv: { PUK: number[], serial: number[] }, errors: Record<string, Record<string, Array<string>> | number>, return_code: object | string } = await (error as HTTPError).response.json()
+      // if (return_code !== '-206')
+      //   return
+      const { errors, csv }: ErrorSchema = await (error as HTTPError).response.json()
+      const { batch_id, batch_count, product_id, file, rows } = errors
 
-      const { file }: { file: File } = variables!
-      const csv = await file.text()
       form.setFieldValue('file', [])
 
-      setErrorMap(csv.split('\n').map((row, i) => {
-        const [serial, puk] = row.split(',')
-        return {
-          row_number: i + 1,
-          serial,
-          puk,
-          // If row number + 1 is not in the errors object, return "Pass"
-          status: errors[i + 1]
-            ? `Duplicate ${Object.keys(errors[i + 1]).map(key =>
-              key.charAt(0).toUpperCase() + key.slice(1),
-            ).join(', ')}`
-            : 'Pass',
-        }
-      }))
+      setErrorMap({ errors:
+        [batch_id, batch_count, product_id, file].flat(), data: csv.PUK.map((puk, i) => ({
+        row_number: i + 1,
+        puk,
+        serial: csv.serial[i],
+        // If row number + 1 is not in the errors object, return "Pass"
+        status: rows
+          ? `Duplicate ${Object.keys(rows[i + 1]).map(key =>
+                key.charAt(0).toUpperCase() + key.slice(1),
+              ).join(', ')}`
+          : 'Pass',
+      })) })
     },
   })
 
@@ -129,21 +149,27 @@ export default function BatchUploadVouchers() {
               />
             </div>
 
-            {errorMap?.length && (
+            {errorMap && (
               <Card withBorder>
-                <Alert title="CSV error" color="red" icon={<IconAlertCircle />}>
-                  Duplicated records found in the database table. Please fix the issues, then try again.
+                <Alert title="Errors" color="red" icon={<IconAlertCircle />}>
+                  {errorMap.errors.map(error => (
+                    <Text key={error}>
+                      {error}
+                    </Text>
+                  ))}
                 </Alert>
                 <AppClientTable
                   id="batch-upload-errors"
                   tableProps={{
-                    records: errorMap,
+                    idAccessor: 'row_number',
+                    records: errorMap.data,
                     columns: [
                       { accessor: 'row_number', title: 'Row number' },
                       { accessor: 'serial', title: 'Serial' },
                       { accessor: 'puk', title: 'PUK' },
                       { accessor: 'status', title: 'Status' },
                     ],
+                    rowBackgroundColor: ({ status }) => status === 'Pass' ? '#40C057' : '#FA5252',
                   }}
                 >
                 </AppClientTable>
