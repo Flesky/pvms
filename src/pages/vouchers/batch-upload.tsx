@@ -13,7 +13,7 @@ import {
   TextInput,
 } from '@mantine/core'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useForm } from '@mantine/form'
+import { useForm, yupResolver } from '@mantine/form'
 import { notifications } from '@mantine/notifications'
 import type { InferType } from 'yup'
 import { mixed, number, object, string } from 'yup'
@@ -50,8 +50,12 @@ export interface ErrorSchema {
 const schema = object().shape({
   batch_id: string().required(),
   product_id: number().required(),
-  batch_count: number().required().min(0),
-  file: mixed().required(),
+  batch_count: number().required().min(1),
+  file: mixed().test(
+    'required',
+    'File is required',
+    value => value instanceof File,
+  ),
 })
 
 export default function BatchUploadVouchers() {
@@ -61,22 +65,26 @@ export default function BatchUploadVouchers() {
       batch_id: '',
       product_id: 0,
       batch_count: 0,
-      file: [],
+      file: undefined,
     },
+    validate: yupResolver(schema),
   })
-  const [errorMap, setErrorMap] = useState<{ errors: string[], data: Array<{
-    row_number: number
-    serial: string
-    puk: string
-    status: string
-  }> }>()
+  const [errorMap, setErrorMap] = useState<
+    // eslint-disable-next-line style/member-delimiter-style
+    { errors: string[]; data: Array<{
+      row_number: number
+      serial: string
+      puk: string
+      status: string
+    }> }
+>()
 
   const { data: products } = useQuery({
     queryKey: ['product'],
     queryFn: async () => (await api.get('product').json<GetAllResponse<Product>>()).results,
   })
 
-  const { mutate, variables, isPending, isSuccess } = useMutation({
+  const { mutate, isPending, isSuccess, data } = useMutation({
     mutationFn: async (values: InferType<typeof schema>) => {
       setErrorMap(undefined)
       const formData = new FormData()
@@ -84,33 +92,34 @@ export default function BatchUploadVouchers() {
       formData.append('batch_count', String(values.batch_count))
       formData.append('product_id', String(values.product_id))
       formData.append('file', values.file as File)
-      return await api.post('batchOrder', { body: formData }).json()
+      return await api.post('batchOrder', { body: formData }).json<{
+        vouchers: [{ serial: string, PUK: string }]
+      }>()
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['voucher'] })
       notifications.show({ message: `Successfully uploaded CSV` })
     },
     onError: async (error) => {
-      // const { csv, errors, return_code }: { csv: { PUK: number[], serial: number[] }, errors: Record<string, Record<string, Array<string>> | number>, return_code: object | string } = await (error as HTTPError).response.json()
-      // if (return_code !== '-206')
-      //   return
       const { errors, csv }: ErrorSchema = await (error as HTTPError).response.json()
       const { batch_id, batch_count, product_id, file, rows } = errors
 
       form.setFieldValue('file', [])
 
       setErrorMap({ errors:
-        [batch_id, batch_count, product_id, file].flat(), data: csv.PUK.map((puk, i) => ({
+        [batch_id, batch_count, product_id, file, rows && 'Duplicate entries were found in the CSV file.'].flat(), data: csv.serial.map((serial, i) => ({
         row_number: i + 1,
-        puk,
-        serial: csv.serial[i],
+        serial,
+        puk: csv.PUK[i],
         // If row number + 1 is not in the errors object, return "Pass"
-        status: rows
-          ? `Duplicate ${Object.keys(rows[i + 1]).map(key =>
+        status: rows[String(i + 1)]
+          ? `Duplicate ${Object.keys(rows[String(i + 1)]).map(key =>
                 key.charAt(0).toUpperCase() + key.slice(1),
               ).join(', ')}`
           : 'Pass',
       })) })
+
+      console.log(errorMap)
     },
   })
 
@@ -136,7 +145,7 @@ export default function BatchUploadVouchers() {
             </div>
             <div className="grid md:grid-cols-2 md:items-baseline">
               <Input.Label required>Batch count</Input.Label>
-              <NumberInput aria-label="Batch count" hideControls {...form.getInputProps('batch_count')} />
+              <NumberInput aria-label="Batch count" min={0} hideControls {...form.getInputProps('batch_count')} />
             </div>
             <div className="grid md:grid-cols-2 md:items-baseline">
               <Input.Label required>Attach CSV</Input.Label>
@@ -149,10 +158,23 @@ export default function BatchUploadVouchers() {
               />
             </div>
 
+            <Group justify="end">
+              <Button
+                onClick={() => {
+                  form.reset()
+                  setErrorMap(undefined)
+                }}
+                variant="default"
+              >
+                Reset form
+              </Button>
+              <Button type="submit" loading={isPending}>Upload</Button>
+            </Group>
+
             {errorMap && (
               <Card withBorder>
                 <Alert title="Errors" color="red" icon={<IconAlertCircle />}>
-                  {errorMap.errors.map(error => (
+                  {errorMap.errors?.map(error => (
                     <Text key={error}>
                       {error}
                     </Text>
@@ -169,7 +191,7 @@ export default function BatchUploadVouchers() {
                       { accessor: 'puk', title: 'PUK' },
                       { accessor: 'status', title: 'Status' },
                     ],
-                    rowBackgroundColor: ({ status }) => status === 'Pass' ? '#40C057' : '#FA5252',
+                    rowBackgroundColor: ({ status }) => status === 'Pass' ? '' : '#FFA8A8',
                   }}
                 >
                 </AppClientTable>
@@ -177,23 +199,24 @@ export default function BatchUploadVouchers() {
             )}
 
             {isSuccess && (
-              <Alert title="Success" color="green" icon={<IconAlertCircle />}>
-                Successfully uploaded CSV.
-              </Alert>
+              <Card withBorder>
+                <Alert title="Success" color="green" icon={<IconAlertCircle />}>
+                  Successfully uploaded CSV.
+                </Alert>
+                <AppClientTable
+                  id="batch-upload-errors"
+                  tableProps={{
+                    idAccessor: 'row_number',
+                    records: data?.vouchers,
+                    columns: [
+                      { accessor: 'serial', title: 'Serial' },
+                      { accessor: 'PUK', title: 'PUK' },
+                    ],
+                  }}
+                >
+                </AppClientTable>
+              </Card>
             )}
-
-            <Group mt="sm" justify="end">
-              <Button
-                onClick={() => {
-                  form.reset()
-                  setErrorMap(undefined)
-                }}
-                variant="default"
-              >
-                Reset form
-              </Button>
-              <Button type="submit" loading={isPending}>Upload</Button>
-            </Group>
           </Stack>
         </form>
       </Container>
