@@ -18,6 +18,7 @@ import api from '@/utils/api.ts'
 import useModal from '@/hooks/useModal.ts'
 import { replaceNullWithEmptyString } from '@/utils/functions.ts'
 import type { BatchOrder } from '@/pages/vouchers/batchOrder.tsx'
+import { router } from '@/utils/router.tsx'
 
 export interface Voucher extends Result {
   serial: string
@@ -248,9 +249,10 @@ export default function Vouchers() {
         <Button
           leftSection={<IconPlus size={16} />}
           onClick={() => {
-            form.reset()
-            saveReset()
-            open('Add voucher')
+            // form.reset()
+            // saveReset()
+            // open('Add voucher')
+            router.navigate('/vouchers/batch-upload')
           }}
         >
           Add voucher

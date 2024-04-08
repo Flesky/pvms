@@ -41,6 +41,15 @@ export interface ErrorSchema {
       }
     }
   }
+  duplicated_rows: [
+    {
+      serial: number
+      rows: number[]
+    } | {
+      PUK: number
+      rows: number[]
+    },
+  ]
   csv: {
     serial: Array<string>
     PUK: Array<string>
@@ -76,6 +85,7 @@ export default function BatchUploadVouchers() {
       serial: string
       puk: string
       status: string
+      cause: string
     }> }
 >()
 
@@ -101,7 +111,7 @@ export default function BatchUploadVouchers() {
       notifications.show({ message: `Successfully uploaded CSV` })
     },
     onError: async (error) => {
-      const { errors, csv }: ErrorSchema = await (error as HTTPError).response.json()
+      const { errors, duplicated_rows, csv }: ErrorSchema = await (error as HTTPError).response.json()
       const { batch_id, batch_count, product_id, file, rows } = errors
 
       form.setFieldValue('file', [])
@@ -117,6 +127,11 @@ export default function BatchUploadVouchers() {
                 key.charAt(0).toUpperCase() + key.slice(1),
               ).join(', ')}`
           : 'Pass',
+        // cause: JSON.stringify(duplicated_rows.filter(({ rows }) => rows.includes(i + 1))),
+        // Use set addition to get the unique rows
+        cause: duplicated_rows.filter(({ rows }) => rows.includes(i + 1)).length
+          ? `CSV: Rows ${JSON.stringify([...new Set(duplicated_rows.filter(({ rows }) => rows.includes(i + 1)).flatMap(({ rows }) => rows))])}`
+          : 'Database',
       })) })
     },
   })
@@ -184,10 +199,11 @@ export default function BatchUploadVouchers() {
                     idAccessor: 'row_number',
                     records: errorMap.data,
                     columns: [
-                      { accessor: 'row_number', title: 'Row number' },
-                      { accessor: 'serial', title: 'Serial' },
+                      { accessor: 'row_number' },
+                      { accessor: 'serial' },
                       { accessor: 'puk', title: 'PUK' },
-                      { accessor: 'status', title: 'Status' },
+                      { accessor: 'status' },
+                      { accessor: 'cause', render: ({ status, cause }) => status === 'Pass' ? '' : cause },
                     ],
                     rowBackgroundColor: ({ status }) => status === 'Pass' ? '' : '#FFA8A8',
                   }}
@@ -202,7 +218,7 @@ export default function BatchUploadVouchers() {
                   Successfully uploaded CSV.
                 </Alert>
                 <AppClientTable
-                  id="batch-upload-errors"
+                  id="batch-upload-success"
                   tableProps={{
                     idAccessor: 'row_number',
                     records: data?.vouchers,
