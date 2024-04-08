@@ -24,7 +24,6 @@ import api from '@/utils/api.ts'
 import type { GetAllResponse } from '@/types'
 import type { Product } from '@/pages/products.tsx'
 import AppClientTable from '@/components/AppClientTable.tsx'
-import { router } from '@/utils/router.tsx'
 
 export interface ErrorSchema {
   message: string
@@ -216,7 +215,7 @@ export default function BatchUploadVouchers() {
                         ? (
                           <Button
                             onClick={() => {
-                              router.navigate(`/vouchers?search=${conflicts.includes('serial')}` ? serial : puk)
+                              window.open(`/vouchers?q=${conflicts.includes('serial') ? serial : puk}`)
                             }}
                             variant="default"
                           >

@@ -1,9 +1,10 @@
-import { CloseButton, Group, Input, Stack } from '@mantine/core'
+import { CloseButton, Group, Stack, TextInput } from '@mantine/core'
 import type { DataTableProps } from 'mantine-datatable'
 import { DataTable } from 'mantine-datatable'
 import type { ReactNode } from 'react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { IconSearch } from '@tabler/icons-react'
+import { useSearchParams } from 'react-router-dom'
 
 interface Props<T> {
   id: string
@@ -14,9 +15,10 @@ interface Props<T> {
 export default function AppClientTable<T extends Record<string, any>>(props: Props<T>) {
   const { tableProps, children } = props
   const { records, recordsPerPage } = tableProps
-  const [search, setSearch] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(recordsPerPage || 25)
+  const [search, setSearch] = useState(searchParams.get('q') || '')
 
   const filteredRecords = useMemo(() => {
     if (!records)
@@ -26,23 +28,37 @@ export default function AppClientTable<T extends Record<string, any>>(props: Pro
     if (search) {
       filtered = records.filter(item =>
         Object.keys(item).some(key =>
-          String(item[key]).toLowerCase().includes(search.toLowerCase()),
+          String(item[key]).toLowerCase().includes(String(search).toLowerCase()),
         ),
       )
     }
     return filtered.slice((page - 1) * pageSize, page * pageSize) as T[]
   }, [records, search, page, pageSize])
 
+  useEffect(() => {
+    setSearchParams({
+      ...Object.fromEntries(searchParams.entries()),
+      q: search,
+    })
+  }, [search])
+
   return (
     <Stack gap={0} h="100%">
       <Group px="md" className="border-b" py="sm" justify={children ? 'space-between' : 'end'}>
         {children}
-        <Input
+        <TextInput
           value={search}
           onChange={e => setSearch(e.currentTarget.value)}
           placeholder="Search..."
           rightSectionPointerEvents="all"
-          rightSection={!search ? <IconSearch size={16} /> : <CloseButton aria-label="Clear input" onClick={() => setSearch('')} />}
+          rightSection={!search
+            ? <IconSearch size={16} />
+            : (
+              <CloseButton
+                aria-label="Clear input"
+                onClick={() => setSearch('')}
+              />
+          )}
         />
       </Group>
       <DataTable

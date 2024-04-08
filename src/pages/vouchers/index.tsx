@@ -337,7 +337,6 @@ export default function Vouchers() {
           ],
         }}
       >
-
         <Select
           aria-label="View"
           value={String(searchParams.get('batchId') || '')}
