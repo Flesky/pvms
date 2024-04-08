@@ -24,6 +24,7 @@ import api from '@/utils/api.ts'
 import type { GetAllResponse } from '@/types'
 import type { Product } from '@/pages/products.tsx'
 import AppClientTable from '@/components/AppClientTable.tsx'
+import { router } from '@/utils/router.tsx'
 
 export interface ErrorSchema {
   message: string
@@ -84,7 +85,7 @@ export default function BatchUploadVouchers() {
       row_number: number
       serial: string
       puk: string
-      status: string
+      conflicts: string[]
       cause: string
     }> }
 >()
@@ -117,18 +118,19 @@ export default function BatchUploadVouchers() {
       form.setFieldValue('file', [])
 
       setErrorMap({ errors:
-        [batch_id, batch_count, product_id, file, rows && 'Duplicate entries were found in the database.', duplicated_rows?.length ? 'Duplicate entries were found in the CSV file.' : undefined].flat(), data: csv.serial.map((serial, i) => ({
+        [batch_id, batch_count, product_id, file, rows && 'Duplicate entries were found in the database.', duplicated_rows?.length ? 'Duplicate entries were found in the CSV file.' : null].flat(), data: csv.serial.map((serial, i) => ({
         row_number: i + 1,
         serial,
         puk: csv.PUK[i],
         // If row number + 1 is not in the errors object, return "Pass"
         // cause: JSON.stringify(duplicated_rows.filter(({ rows }) => rows.includes(i + 1))),
         // Use set addition to get the unique rows
-        status: (rows && rows[String(i + 1)])
-          ? `Duplicate ${Object.keys(rows[String(i + 1)]).map(key =>
-                key.charAt(0).toUpperCase() + key.slice(1),
-            ).join(', ')}`
-          : 'Pass',
+        conflicts: (rows && rows[String(i + 1)])
+          ? Object.keys(rows[String(i + 1)])
+        //  .map(key =>
+        //  key.charAt(0).toUpperCase() + key.slice(1),
+        // )
+          : [],
         cause: duplicated_rows.filter(({ rows }) => rows.includes(i + 1)).length
           ? `CSV: Rows ${JSON.stringify([...new Set(duplicated_rows.filter(({ rows }) => rows.includes(i + 1)).flatMap(({ rows }) => rows))])}`
           : 'Database',
@@ -203,10 +205,27 @@ export default function BatchUploadVouchers() {
                       { accessor: 'row_number' },
                       { accessor: 'serial' },
                       { accessor: 'puk', title: 'PUK' },
-                      { accessor: 'status' },
-                      // { accessor: 'cause', render: ({ status, cause }) => status === 'Pass' ? '' : cause },
+                      // { accessor: 'status' },
+                      { accessor: 'status', render: ({ conflicts }) => conflicts?.length
+                        ? `Duplicate ${conflicts.map(key =>
+                          key.charAt(0).toUpperCase() + key.slice(1),
+                        ).join(', ')}`
+                        : 'Pass' },
+                      { accessor: 'cause', render: ({ conflicts, cause }) => conflicts?.length ? cause : '' },
+                      { accessor: 'action', render: ({ serial, puk, conflicts, cause }) => (conflicts?.length && cause === 'Database')
+                        ? (
+                          <Button
+                            onClick={() => {
+                              router.navigate(`/vouchers?search=${conflicts.includes('serial')}` ? serial : puk)
+                            }}
+                            variant="default"
+                          >
+                            View
+                          </Button>
+                          )
+                        : '' },
                     ],
-                    rowBackgroundColor: ({ status }) => status === 'Pass' ? '' : '#FFA8A8',
+                    rowBackgroundColor: ({ conflicts }) => conflicts?.length ? '#FFA8A8' : undefined,
                   }}
                 >
                 </AppClientTable>
