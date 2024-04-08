@@ -1,6 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom'
 import type { TablerIconsProps } from '@tabler/icons-react'
-import { IconBox, IconTicket } from '@tabler/icons-react'
+import { IconBox, IconSettings, IconTicket } from '@tabler/icons-react'
 
 import DefaultLayout from '../app.tsx'
 
@@ -9,6 +9,7 @@ import Products from '../pages/products.tsx'
 import BatchUpload from '@/pages/vouchers/batchUpload.tsx'
 import Vouchers from '@/pages/vouchers'
 import BatchOrders from '@/pages/vouchers/batchOrder.tsx'
+import ErrorMessages from '@/pages/config/messages.tsx'
 
 interface NavItem {
   to: string
@@ -38,6 +39,10 @@ const navLinks: NavLinks = [
     { to: '/vouchers/batch-orders', label: 'Batch orders' },
     { to: '/vouchers/batch-upload', label: 'Batch upload' },
   ] },
+
+  { label: 'Configuration', icon: IconSettings, children: [
+    { to: '/settings/error-messages', label: 'Error messages' },
+  ] },
   // { to: '/vouchers/add', label: 'Add VouchersDeprecated', icon: IconTicket },
 ]
 
@@ -52,6 +57,8 @@ const router = createBrowserRouter([
         { path: 'batch-orders', element: <BatchOrders /> },
         { path: 'batch-upload', element: <BatchUpload /> },
       ] },
+
+      { path: 'settings/error-messages', element: <ErrorMessages /> },
     ],
     element: <DefaultLayout />,
     path: '/',
