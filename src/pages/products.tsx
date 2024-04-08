@@ -73,6 +73,7 @@ export default function Products() {
     mutationFn: async (id: string) => await api.delete(`product/${id}`).json() as GetResponse<Product>,
     onSuccess: (data: GetResponse<Product>) => {
       queryClient.invalidateQueries({ queryKey: ['product'] })
+      queryClient.invalidateQueries({ queryKey: ['voucher'] })
       notifications.show({ message: `Successfully deleted product: ${data.results.product_code}`, color: 'green' })
       close()
     },

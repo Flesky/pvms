@@ -1,33 +1,23 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query'
 import { notifications } from '@mantine/notifications'
 import { useForm, yupResolver } from '@mantine/form'
-import { object } from 'yup'
 import type { InferType } from 'yup'
-
-import {
-  Alert,
-  Box,
-  Button,
-  Grid,
-  Group,
-  Modal,
-  NumberInput,
-  Select,
-  Stack,
-  TextInput,
-} from '@mantine/core'
+import * as yup from 'yup'
+import { object } from 'yup'
+import { Alert, Button, Grid, Group, Modal, NumberInput, Select, TextInput } from '@mantine/core'
 import { DateInput } from '@mantine/dates'
 import { IconAlertCircle, IconPlus } from '@tabler/icons-react'
-import * as yup from 'yup'
 import type { HTTPError } from 'ky'
-import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import AppHeader from '@/components/AppHeader.tsx'
 import AppClientTable from '@/components/AppClientTable.tsx'
 import type { Product } from '@/pages/products.tsx'
 import type { GetAllResponse, GetResponse, Result } from '@/types'
+
 import api from '@/utils/api.ts'
 import useModal from '@/hooks/useModal.ts'
 import { replaceNullWithEmptyString } from '@/utils/functions.ts'
+import type { BatchOrder } from '@/pages/vouchers/batchOrder.tsx'
 
 export interface Voucher extends Result {
   serial: string
@@ -45,15 +35,7 @@ export interface Voucher extends Result {
   business_unit: string
   deplete_date?: string
   available?: number
-  batch_id?: number
-}
-
-export interface BatchOrder extends Result {
-  id: number
-  batch_id: number
-  product_id: number
-  batch_count: number
-  voucher: Voucher
+  batch_id?: string
 }
 
 const schema = object().shape({
@@ -75,25 +57,59 @@ const schema = object().shape({
 export default function Vouchers() {
   const { open, close, id, modalProps } = useModal()
   const queryClient = useQueryClient()
-  const [batchId, setBatchId] = useState<string>()
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  const { data, isPending } = useQuery({
-    queryKey: ['voucher'],
-    queryFn: async () => {
-      const [vouchers, products, batchOrders] = await Promise.all([
-        api.get('getAllVouchers').json() as Promise<GetAllResponse<Voucher>>,
-        api.get('product').json() as Promise<GetAllResponse<Product>>,
-        api.get('batchOrder').json() as Promise<GetAllResponse<BatchOrder>>,
-      ])
-      // eslint-disable-next-line ts/no-use-before-define
-      saveReset()
-      // eslint-disable-next-line ts/no-use-before-define
-      toggleReset()
+  // const { data, isPending } = useQuery({
+  //   queryKey: ['voucher'],
+  //   queryFn: async () => {
+  //     const [vouchers, products, batchOrders] = await Promise.all([
+  //       api.get('getAllVouchers').json() as Promise<GetAllResponse<Voucher>>,
+  //       api.get('product').json() as Promise<GetAllResponse<Product>>,
+  //       api.get('batchOrder').json() as Promise<GetAllResponse<BatchOrder>>,
+  //     ])
+  //     // eslint-disable-next-line ts/no-use-before-define
+  //     saveReset()
+  //     // eslint-disable-next-line ts/no-use-before-define
+  //     toggleReset()
+  //
+  //     return {
+  //       vouchers: vouchers.results,
+  //       products: products.results,
+  //       batchOrders: batchOrders.results,
+  //     }
+  //   },
+  // })
 
+  const { data, isPending } = useQueries({
+    queries: [
+      {
+        queryKey: ['voucher'],
+        queryFn: async () => {
+          const vouchers = (await api.get('getAllVouchers').json<GetAllResponse<Voucher>>()).results
+          // eslint-disable-next-line ts/no-use-before-define
+          saveReset()
+          // eslint-disable-next-line ts/no-use-before-define
+          toggleReset()
+          return vouchers
+        },
+      },
+      {
+        queryKey: ['product'],
+        queryFn: async () => (await api.get('product').json<GetAllResponse<Product>>()).results,
+      },
+      {
+        queryKey: ['batchOrder'],
+        queryFn: async () => (await api.get('batchOrder').json<GetAllResponse<BatchOrder>>()).results,
+      },
+    ],
+    combine: (results) => {
       return {
-        vouchers: vouchers.results,
-        products: products.results,
-        batchOrders: batchOrders.results,
+        data: {
+          vouchers: results[0].data,
+          products: results[1].data,
+          batchOrders: results[2].data,
+        },
+        isPending: results.some(result => result.isPending),
       }
     },
   })
@@ -228,7 +244,7 @@ export default function Vouchers() {
         </form>
       </Modal>
 
-      <AppHeader title="View all">
+      <AppHeader title="Vouchers">
         <Button
           leftSection={<IconPlus size={16} />}
           onClick={() => {
@@ -241,98 +257,94 @@ export default function Vouchers() {
         </Button>
       </AppHeader>
 
-      <Stack gap={0} h="100%">
-        <Box px="md" py="sm" className="border-b">
-          <Group>
-            <Select
-              aria-label="View"
-              value={batchId}
-              onChange={setBatchId}
-              clearable
-              placeholder="Select view"
-              searchable
-              data={data?.batchOrders?.map(({ batch_id }) => String(batch_id)) || []}
-            />
-          </Group>
-        </Box>
+      <AppClientTable
+        id="vouchers"
+        tableProps={{
+          records: searchParams.get('batchId') ? data?.vouchers?.filter(({ batch_id }) => batch_id === searchParams.get('batchId')) : data?.vouchers,
+          fetching: isPending,
+          columns: [
+            {
+              accessor: 'batch_id',
+              title: 'Batch ID',
+              hidden: !!searchParams.get('batchId'),
+            },
 
-        <AppClientTable
-          id="vouchers"
-          tableProps={{
-            records: data?.vouchers,
-            fetching: isPending,
-            columns: [
-              {
-                accessor: 'batch_id',
-                title: 'Batch ID',
-              },
-              { accessor: 'serial',
-                // render: ({ voucher_code }) => (
-                //   <Group wrap="nowrap">
-                //     <IconChevronRight size={16} />
-                //     <span>{voucher_code}</span>
-                //   </Group>
-                // )
-              },
-              {
-                accessor: 'product_code',
-              },
-              { accessor: 'expire_date' },
-              { accessor: 'depleted', render: ({ available, deplete_date }) => available ? 'No' : deplete_date || 'Yes' },
-              { accessor: 'value' },
-              { accessor: 'service_reference', title: 'Service reference' },
-              { accessor: 'business_unit' },
-              { accessor: 'IMEI', title: 'IMEI' },
-              { accessor: 'SIMNarrative', title: 'Narrative' },
-              { accessor: 'SIMNo', title: 'SIM number' },
-              { accessor: 'IMSI', title: 'IMSI' },
-              { accessor: 'PUK', title: 'PUK' },
-              { accessor: 'available', title: 'Status', render: ({ available }) => (available ? 'Active' : 'Inactive') },
-              {
-                accessor: 'actions',
-                title: 'Actions',
-                textAlign: 'right',
-                render: row => (
-                  <Group gap={4} justify="right" wrap="nowrap">
-                    <Button
-                      size="xs"
-                      variant="light"
-                      color="gray"
-                      loading={saveIsPending && saveVariables?.values.serial === row.serial}
-                      disabled={saveIsPending && !!saveVariables}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        saveReset()
-                        form.setValues({ ...replaceNullWithEmptyString(row), expire_date: row.expire_date ? new Date(`${row.expire_date}T00:00:00`) as unknown as string : '' })
-                        open(`Edit ${row.serial}`, row.serial)
-                      }}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      size="xs"
-                      variant="light"
-                      loading={toggleVariables?.serial === row.serial}
-                      disabled={!!toggleVariables}
-                      color={row.available ? 'red' : 'green'}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        toggleMutate(row)
-                      }}
-                    >
-                      <span className="w-16">
-                        {row.available ? 'Deactivate' : 'Activate'}
-                      </span>
-                    </Button>
-                  </Group>
-                )
-                ,
-              },
-            ],
-          }}
-        >
-        </AppClientTable>
-      </Stack>
+            { accessor: 'serial',
+              // render: ({ voucher_code }) => (
+              //   <Group wrap="nowrap">
+              //     <IconChevronRight size={16} />
+              //     <span>{voucher_code}</span>
+              //   </Group>
+              // )
+            },
+            {
+              accessor: 'product_code',
+            },
+            { accessor: 'expire_date' },
+            { accessor: 'depleted', render: ({ available, deplete_date }) => available ? 'No' : deplete_date || 'Yes' },
+            { accessor: 'value' },
+            { accessor: 'service_reference', title: 'Service reference' },
+            { accessor: 'business_unit' },
+            { accessor: 'IMEI', title: 'IMEI' },
+            { accessor: 'SIMNarrative', title: 'Narrative' },
+            { accessor: 'SIMNo', title: 'SIM number' },
+            { accessor: 'IMSI', title: 'IMSI' },
+            { accessor: 'PUK', title: 'PUK' },
+            { accessor: 'available', title: 'Status', render: ({ available }) => (available ? 'Active' : 'Inactive') },
+            {
+              accessor: 'actions',
+              title: 'Actions',
+              textAlign: 'right',
+              render: row => (
+                <Group gap={4} justify="right" wrap="nowrap">
+                  <Button
+                    size="xs"
+                    variant="light"
+                    color="gray"
+                    loading={saveIsPending && saveVariables?.values.serial === row.serial}
+                    disabled={saveIsPending && !!saveVariables}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      saveReset()
+                      form.setValues({ ...replaceNullWithEmptyString(row), expire_date: row.expire_date ? new Date(`${row.expire_date}T00:00:00`) as unknown as string : '' })
+                      open(`Edit ${row.serial}`, row.serial)
+                    }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    size="xs"
+                    variant="light"
+                    loading={toggleVariables?.serial === row.serial}
+                    disabled={!!toggleVariables}
+                    color={row.available ? 'red' : 'green'}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      toggleMutate(row)
+                    }}
+                  >
+                    <span className="w-16">
+                      {row.available ? 'Deactivate' : 'Activate'}
+                    </span>
+                  </Button>
+                </Group>
+              )
+              ,
+            },
+          ],
+        }}
+      >
+
+        <Select
+          aria-label="View"
+          value={String(searchParams.get('batchId') || '')}
+          onChange={batchId => !batchId ? setSearchParams('') : setSearchParams({ batchId })}
+          clearable
+          placeholder="Select batch ID"
+          searchable
+          data={data?.batchOrders?.map(({ batch_id }) => String(batch_id)) || []}
+        />
+      </AppClientTable>
     </>
   )
 }
