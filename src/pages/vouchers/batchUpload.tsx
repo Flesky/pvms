@@ -10,13 +10,12 @@ import {
   Select,
   Stack,
   Text,
-  TextInput,
 } from '@mantine/core'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm, yupResolver } from '@mantine/form'
 import { notifications } from '@mantine/notifications'
 import type { InferType } from 'yup'
-import { mixed, number, object, string } from 'yup'
+import { mixed, number, object } from 'yup'
 import { useState } from 'react'
 import type { HTTPError } from 'ky'
 import { IconAlertCircle } from '@tabler/icons-react'
@@ -57,7 +56,7 @@ export interface ErrorSchema {
 }
 
 const schema = object().shape({
-  batch_id: string().required(),
+  batch_id: number().required(),
   product_id: number().required(),
   batch_count: number().required().min(1),
   file: mixed().test(
@@ -71,12 +70,13 @@ export default function BatchUploadVouchers() {
   const queryClient = useQueryClient()
   const form = useForm<InferType<typeof schema>>({
     initialValues: {
-      batch_id: '',
+      batch_id: 0,
       product_id: 0,
       batch_count: 0,
       file: undefined,
     },
     validate: yupResolver(schema),
+    validateInputOnBlur: true,
   })
   const [errorMap, setErrorMap] = useState<
     // eslint-disable-next-line style/member-delimiter-style
@@ -98,7 +98,7 @@ export default function BatchUploadVouchers() {
     mutationFn: async (values: InferType<typeof schema>) => {
       setErrorMap(undefined)
       const formData = new FormData()
-      formData.append('batch_id', values.batch_id)
+      formData.append('batch_id', String(values.batch_id))
       formData.append('batch_count', String(values.batch_count))
       formData.append('product_id', String(values.product_id))
       formData.append('file', values.file as File)
@@ -117,18 +117,18 @@ export default function BatchUploadVouchers() {
       form.setFieldValue('file', [])
 
       setErrorMap({ errors:
-        [batch_id, batch_count, product_id, file, rows && 'Duplicate entries were found in the CSV file.'].flat(), data: csv.serial.map((serial, i) => ({
+        [batch_id, batch_count, product_id, file, rows && 'Duplicate entries were found in the database.', duplicated_rows?.length ? 'Duplicate entries were found in the CSV file.' : undefined].flat(), data: csv.serial.map((serial, i) => ({
         row_number: i + 1,
         serial,
         puk: csv.PUK[i],
         // If row number + 1 is not in the errors object, return "Pass"
-        status: rows[String(i + 1)]
-          ? `Duplicate ${Object.keys(rows[String(i + 1)]).map(key =>
-                key.charAt(0).toUpperCase() + key.slice(1),
-              ).join(', ')}`
-          : 'Pass',
         // cause: JSON.stringify(duplicated_rows.filter(({ rows }) => rows.includes(i + 1))),
         // Use set addition to get the unique rows
+        status: (rows && rows[String(i + 1)])
+          ? `Duplicate ${Object.keys(rows[String(i + 1)]).map(key =>
+                key.charAt(0).toUpperCase() + key.slice(1),
+            ).join(', ')}`
+          : 'Pass',
         cause: duplicated_rows.filter(({ rows }) => rows.includes(i + 1)).length
           ? `CSV: Rows ${JSON.stringify([...new Set(duplicated_rows.filter(({ rows }) => rows.includes(i + 1)).flatMap(({ rows }) => rows))])}`
           : 'Database',
@@ -145,11 +145,12 @@ export default function BatchUploadVouchers() {
           <Stack p="md" gap="lg">
             <div className="grid md:grid-cols-2 md:items-baseline">
               <Input.Label required>Batch ID</Input.Label>
-              <TextInput required {...form.getInputProps('batch_id')} />
+              <NumberInput aria-label="Batch ID" hideControls required {...form.getInputProps('batch_id')} />
             </div>
             <div className="grid md:grid-cols-2 md:items-baseline">
               <Input.Label required>Product reference</Input.Label>
               <Select
+                aria-label="Product reference"
                 searchable
                 clearable
                 data={products?.map(({ product_id, product_name }) => ({ label: product_name, value: String(product_id) }))}
@@ -203,7 +204,7 @@ export default function BatchUploadVouchers() {
                       { accessor: 'serial' },
                       { accessor: 'puk', title: 'PUK' },
                       { accessor: 'status' },
-                      { accessor: 'cause', render: ({ status, cause }) => status === 'Pass' ? '' : cause },
+                      // { accessor: 'cause', render: ({ status, cause }) => status === 'Pass' ? '' : cause },
                     ],
                     rowBackgroundColor: ({ status }) => status === 'Pass' ? '' : '#FFA8A8',
                   }}

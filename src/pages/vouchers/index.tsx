@@ -40,19 +40,19 @@ export interface Voucher extends Result {
 }
 
 const schema = object().shape({
-  serial: yup.string().required(),
-  value: yup.number().min(0),
-  product_code: yup.string().required(),
-  product_id: yup.number().nullable(),
-  expire_date: yup.string().nullable(),
-  IMEI: yup.string().nullable(),
-  SIMNarrative: yup.string().nullable(),
-  SIMNo: yup.string().nullable(),
-  PCN: yup.string().nullable(),
-  PUK: yup.string().required(),
-  IMSI: yup.string().nullable(),
-  service_reference: yup.string().nullable(),
-  business_unit: yup.string().nullable(),
+  serial: yup.string().trim().required().label('Serial'),
+  value: yup.number().min(0).label('Value'),
+  product_code: yup.string().trim().required().label('Product code'),
+  product_id: yup.number().nullable().label('Product ID'),
+  expire_date: yup.string().trim().nullable().label('Expiry date'),
+  IMEI: yup.string().trim().nullable().label('IMEI'),
+  SIMNarrative: yup.string().trim().nullable().label('SIM narrative'),
+  SIMNo: yup.string().trim().nullable().label('SIM number'),
+  PCN: yup.string().trim().nullable(),
+  PUK: yup.string().trim().required(),
+  IMSI: yup.string().trim().nullable(),
+  service_reference: yup.string().trim().nullable().label('Service reference'),
+  business_unit: yup.string().trim().nullable().label('Business unit'),
 })
 
 export default function Vouchers() {
@@ -138,6 +138,7 @@ export default function Vouchers() {
       }
     },
     validate: yupResolver(schema),
+    validateInputOnBlur: true,
   })
 
   const { mutate: saveMutate, isPending: saveIsPending, variables: saveVariables, reset: saveReset, error: saveError } = useMutation({

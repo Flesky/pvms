@@ -20,10 +20,10 @@ export interface Product extends Result {
 }
 
 const schema = yup.object().shape({
-  product_code: yup.string().required().label('Product code'),
-  product_id: yup.number().required(),
-  product_name: yup.string().required(),
-  supplier: yup.string().required(),
+  product_code: yup.string().trim().required().label('Product code'),
+  product_id: yup.string().required().label('Product ID'),
+  product_name: yup.string().trim().required().label('Product name'),
+  supplier: yup.string().trim().required().label('Supplier'),
 })
 
 export default function Products() {
@@ -44,6 +44,7 @@ export default function Products() {
       }
     },
     validate: yupResolver(schema),
+    validateInputOnBlur: true,
   })
 
   const { data: records, isPending } = useQuery({
