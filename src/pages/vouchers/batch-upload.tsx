@@ -118,8 +118,6 @@ export default function BatchUploadVouchers() {
               ).join(', ')}`
           : 'Pass',
       })) })
-
-      console.log(errorMap)
     },
   })
 
@@ -148,11 +146,11 @@ export default function BatchUploadVouchers() {
               <NumberInput aria-label="Batch count" min={0} hideControls {...form.getInputProps('batch_count')} />
             </div>
             <div className="grid md:grid-cols-2 md:items-baseline">
-              <Input.Label required>Attach CSV</Input.Label>
+              <Input.Label required>CSV file</Input.Label>
               <FileInput
                 accept=".csv"
-                aria-label="Attach CSV file"
-                placeholder="CSV file"
+                aria-label="Select CSV file"
+                placeholder="Select CSV file"
                 leftSectionPointerEvents="none"
                 {...form.getInputProps('file')}
               />

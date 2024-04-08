@@ -32,6 +32,23 @@ import AppClientTable from '../components/AppClientTable.tsx'
 import type { Product } from './products.tsx'
 
 export interface Voucher extends Result {
+  // expire_date: string
+  // value: number
+  // deplete_date: string
+  // serial: string
+  // product_code: string
+  // product_id: number
+  // IMEI: string
+  // SIMNarrative: string
+  // PCN: string
+  // SIMNo: string
+  // PUK: string
+  // IMSI: string
+  // available: number
+  // service_reference: string
+  // business_unit: string
+  // batch_id: number
+
   expire_date: string
   value: number
   deplete_date: string
@@ -74,7 +91,7 @@ const schema = yup.object().shape({
   batch_id: yup.string().nullable(),
 })
 
-export default function VouchersOld() {
+export default function VouchersDeprecated() {
   const { open: formOpen, close: formClose, id: formId, modalProps: formModalProps } = useModal()
   const { open, close, id, modalProps } = useModal()
   const queryClient = useQueryClient()
@@ -378,17 +395,17 @@ export default function VouchersOld() {
       </Modal>
 
       <AppHeader title="Vouchers">
-        {/*<Button*/}
-        {/*  variant="default"*/}
-        {/*  leftSection={<IconPlus size={16} />}*/}
-        {/*  onClick={() => {*/}
-        {/*    batchOrderForm.reset()*/}
-        {/*    setUploadErrors(undefined)*/}
-        {/*    open('Upload CSV')*/}
-        {/*  }}*/}
-        {/*>*/}
-        {/*  Upload CSV*/}
-        {/*</Button>*/}
+        {/* <Button */}
+        {/*  variant="default" */}
+        {/*  leftSection={<IconPlus size={16} />} */}
+        {/*  onClick={() => { */}
+        {/*    batchOrderForm.reset() */}
+        {/*    setUploadErrors(undefined) */}
+        {/*    open('Upload CSV') */}
+        {/*  }} */}
+        {/* > */}
+        {/*  Upload CSV */}
+        {/* </Button> */}
         <Button
           leftSection={<IconPlus size={16} />}
           onClick={() => {

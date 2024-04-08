@@ -8,7 +8,6 @@ import DefaultLayout from '../app.tsx'
 import Products from '../pages/products.tsx'
 import BatchUploadVouchers from '@/pages/vouchers/batch-upload.tsx'
 import Vouchers from '@/pages/vouchers'
-import VouchersOld from "@/pages/vouchersOld.tsx";
 
 interface NavItem {
   to: string
@@ -37,7 +36,7 @@ const navLinks: NavLinks = [
     { to: '/vouchers', label: 'View all' },
     { to: '/vouchers/batch', label: 'Batch upload' },
   ] },
-  // { to: '/vouchers/add', label: 'Add VouchersOld', icon: IconTicket },
+  // { to: '/vouchers/add', label: 'Add VouchersDeprecated', icon: IconTicket },
 ]
 
 const router = createBrowserRouter([
@@ -47,7 +46,7 @@ const router = createBrowserRouter([
       { path: '', element: <Products /> },
 
       { path: 'vouchers', children: [
-        { path: '', element: <VouchersOld /> },
+        { path: '', element: <Vouchers /> },
         { path: 'batch', element: <BatchUploadVouchers /> },
       ] },
     ],

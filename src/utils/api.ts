@@ -1,4 +1,4 @@
-import ky from 'ky'
+import ky, { type HTTPError } from 'ky'
 import { notifications } from '@mantine/notifications'
 import { getUser } from './oidc.ts'
 
@@ -13,16 +13,23 @@ const api = ky.create({
         // request.headers.set('Authorization', `q`)
       },
     ],
-    beforeError: [
-      async (error) => {
-        const clone = error.response.clone()
-        const response = await clone.json()
-        console.log(response)
-        notifications.show({ message: response.message })
-        return error
-      },
-    ],
+    // beforeError: [
+    //   async (error) => {
+    //     const clone = error.response.clone()
+    //     const response = await clone.json()
+    //     console.log(response)
+    //     notifications.show({ message: response.message })
+    //     return error
+    //   },
+    // ],
   },
 })
+
+export async function defaultApiError(error: HTTPError) {
+  const clone = error.response.clone()
+  const response = await clone.json()
+  notifications.show({ message: response.message })
+  return response
+}
 
 export default api
