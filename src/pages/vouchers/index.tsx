@@ -17,7 +17,7 @@ import type { GetAllResponse, GetResponse, Result } from '@/types'
 import api from '@/utils/api.ts'
 import useModal from '@/hooks/useModal.ts'
 import { replaceNullWithEmptyString } from '@/utils/functions.ts'
-import type { BatchOrder } from '@/pages/vouchers/batchOrder.tsx'
+import type { BatchOrder } from '@/pages/vouchers/batch-order.tsx'
 import { router } from '@/utils/router.tsx'
 
 export interface Voucher extends Result {
@@ -262,6 +262,7 @@ export default function Vouchers() {
 
       <AppClientTable
         id="vouchers"
+        defaultQuery={searchParams.get('q')}
         tableProps={{
           records: searchParams.get('batchId') ? data?.vouchers?.filter(({ batch_id }) => batch_id === searchParams.get('batchId')) : data?.vouchers,
           fetching: isPending,
@@ -271,7 +272,6 @@ export default function Vouchers() {
               title: 'Batch ID',
               hidden: !!searchParams.get('batchId'),
             },
-
             { accessor: 'serial',
               // render: ({ voucher_code }) => (
               //   <Group wrap="nowrap">

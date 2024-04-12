@@ -1,15 +1,16 @@
 import { createBrowserRouter } from 'react-router-dom'
 import type { TablerIconsProps } from '@tabler/icons-react'
-import { IconBox, IconSettings, IconTicket } from '@tabler/icons-react'
+import { IconBox, IconHistory, IconSettings, IconTicket } from '@tabler/icons-react'
 
 import DefaultLayout from '../app.tsx'
 
 // import Index from '../pages'
 import Products from '../pages/products.tsx'
-import BatchUpload from '@/pages/vouchers/batchUpload.tsx'
+import BatchUpload from '@/pages/vouchers/batch-upload.tsx'
 import Vouchers from '@/pages/vouchers'
-import BatchOrders from '@/pages/vouchers/batchOrder.tsx'
+import BatchOrders from '@/pages/vouchers/batch-order.tsx'
 import ErrorMessages from '@/pages/config/messages.tsx'
+import AuditLog from '@/pages/audit-log'
 
 interface NavItem {
   to: string
@@ -40,6 +41,12 @@ const navLinks: NavLinks = [
     { to: '/vouchers/batch-upload', label: 'Batch upload' },
   ] },
 
+  {
+    label: 'History',
+    icon: IconHistory,
+    to: '/audit-log',
+  },
+
   { label: 'Configuration', icon: IconSettings, children: [
     { to: '/settings/error-messages', label: 'Error messages' },
   ] },
@@ -57,6 +64,11 @@ const router = createBrowserRouter([
         { path: 'batch-orders', element: <BatchOrders /> },
         { path: 'batch-upload', element: <BatchUpload /> },
       ] },
+
+      {
+        path: '/audit-log',
+        element: <AuditLog />,
+      },
 
       { path: 'settings/error-messages', element: <ErrorMessages /> },
     ],

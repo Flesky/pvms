@@ -41,6 +41,11 @@ export default function BatchOrders() {
               title: 'Number of vouchers',
             },
             {
+              accessor: 'created_at',
+              title: 'Created at',
+              render: ({ created_at }) => new Date(created_at).toLocaleString(),
+            },
+            {
               accessor: 'actions',
               title: 'Actions',
               textAlign: 'right',
