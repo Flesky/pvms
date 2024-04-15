@@ -56,8 +56,8 @@ const schema = object().shape({
 })
 
 export default function Vouchers() {
-  const { open, close, id, modalProps } = useModal()
-  const { invalidateQueries } = useQueryClient()
+  const { open, close, id, modalProps } = useModal<string>()
+  const queryClient = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()
 
   // const { data, isPending } = useQuery({
@@ -142,13 +142,13 @@ export default function Vouchers() {
   })
 
   const { mutate: saveMutate, isPending: saveIsPending, variables: saveVariables, reset: saveReset, error: saveError } = useMutation({
-    mutationFn: async ({ id, values }: { id: string, values: InferType<typeof schema> }) => {
+    mutationFn: async ({ id, values }: { id?: string, values: InferType<typeof schema> }) => {
       return !id
         ? await api.post('createVoucher', { json: values }).json() as GetResponse<Voucher>
         : await api.put(`editVoucher/${id}`, { json: values }).json() as GetResponse<Voucher>
     },
     onSuccess: (data: GetResponse<Voucher>) => {
-      invalidateQueries({ queryKey: ['voucher'] })
+      queryClient.invalidateQueries({ queryKey: ['voucher'] })
       // @ts-expect-error Inconsistent typing from API
       notifications.show({ message: `Successfully saved voucher: ${data.results.serial || data.results[0].serial}`, color: 'green' })
       close()
@@ -164,7 +164,7 @@ export default function Vouchers() {
   const { mutate: toggleMutate, variables: toggleVariables, reset: toggleReset } = useMutation({
     mutationFn: async (values: Voucher) => await api.patch(`set${values.available ? 'Inactive' : 'Active'}/${values.serial}`).json() as GetResponse<Voucher>,
     onSuccess: (data: GetResponse<Voucher>) => {
-      invalidateQueries({ queryKey: ['voucher'] })
+      queryClient.invalidateQueries({ queryKey: ['voucher'] })
       notifications.show({ message: `Successfully ${data.results.available ? 'activated' : 'deactivated'} voucher: ${data.results.serial}`, color: 'green' })
       close()
     },

@@ -13,7 +13,6 @@ import {
 } from '@mantine/core'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm, yupResolver } from '@mantine/form'
-import { notifications } from '@mantine/notifications'
 import type { InferType } from 'yup'
 import { mixed, number, object } from 'yup'
 import { useState } from 'react'
@@ -108,7 +107,7 @@ export default function BatchUploadVouchers() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['voucher'] })
-      notifications.show({ message: `Successfully uploaded CSV` })
+      // notifications.show({ message: `Successfully uploaded CSV` })
     },
     onError: async (error) => {
       const { errors, duplicated_rows, csv }: ErrorSchema = await (error as HTTPError).response.json()

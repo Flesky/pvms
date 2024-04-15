@@ -6,6 +6,7 @@ import { modals } from '@mantine/modals'
 import { notifications } from '@mantine/notifications'
 import { IconAlertCircle, IconPlus } from '@tabler/icons-react'
 import type { HTTPError } from 'ky'
+import type { InferType } from 'yup'
 import api, { transformErrors } from '../utils/api.ts'
 import AppHeader from '../components/AppHeader.tsx'
 import AppClientTable from '../components/AppClientTable.tsx'
@@ -27,7 +28,7 @@ const schema = yup.object().shape({
 })
 
 export default function Products() {
-  const { open, close, id, modalProps } = useModal()
+  const { open, close, id, modalProps } = useModal<string>()
   const queryClient = useQueryClient()
 
   const form = useForm({
@@ -53,7 +54,7 @@ export default function Products() {
   })
 
   const { mutate: save, isPending: saveIsPending, variables: saveVariables, reset: saveReset, error } = useMutation({
-    mutationFn: async ({ values, id }: { values: Product, id?: string }) =>
+    mutationFn: async ({ values, id }: { values: InferType<typeof schema>, id?: string }) =>
       !id
         ? await api.post('product', { json: values }).json() as GetResponse<Product>
         : await api.put(`product/${id}`, { json: values }).json() as GetResponse<Product>,
