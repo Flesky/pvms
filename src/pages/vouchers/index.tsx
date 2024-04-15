@@ -177,7 +177,7 @@ export default function Vouchers() {
   return (
     <>
       <Modal size="lg" {...modalProps}>
-        <form onSubmit={form.onSubmit(values => saveMutate({ id: String(id), values }))}>
+        <form onSubmit={form.onSubmit(values => saveMutate({ id, values }))}>
           <Grid>
             <Grid.Col span={6}>
               <TextInput required label="Serial number" {...form.getInputProps('serial')} />

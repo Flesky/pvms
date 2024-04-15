@@ -71,7 +71,7 @@ export default function ErrorCodes() {
   return (
     <>
       <Modal {...modalProps}>
-        <form onSubmit={form.onSubmit(values => save({ values, id: Number(id) }))}>
+        <form onSubmit={form.onSubmit(values => save({ values, id }))}>
           <TextInput disabled required mt="sm" label="Error code" {...form.getInputProps('error_code')} />
           <TextInput required mt="sm" label="Error message" {...form.getInputProps('error_message')} />
           {error && (
