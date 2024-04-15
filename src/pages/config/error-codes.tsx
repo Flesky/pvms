@@ -24,7 +24,7 @@ const schema = yup.object().shape({
 
 export default function ErrorCodes() {
   const { open, close, id, modalProps } = useModal()
-  const queryClient = useQueryClient()
+  const { invalidateQueries } = useQueryClient()
 
   const form = useForm({
     initialValues: {
@@ -46,7 +46,7 @@ export default function ErrorCodes() {
         ? await api.post('errorCodes', { json: values }).json() as GetResponse<ErrorCode>
         : await api.put(`errorCodes/${id}`, { json: values }).json() as GetResponse<ErrorCode>,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['errorCodes'] })
+      invalidateQueries({ queryKey: ['errorCodes'] })
       notifications.show({ message: `Successfully saved error message.`, color: 'green' })
       close()
     },

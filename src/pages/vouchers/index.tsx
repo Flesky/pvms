@@ -57,7 +57,7 @@ const schema = object().shape({
 
 export default function Vouchers() {
   const { open, close, id, modalProps } = useModal()
-  const queryClient = useQueryClient()
+  const { invalidateQueries } = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()
 
   // const { data, isPending } = useQuery({
@@ -148,7 +148,7 @@ export default function Vouchers() {
         : await api.put(`editVoucher/${id}`, { json: values }).json() as GetResponse<Voucher>
     },
     onSuccess: (data: GetResponse<Voucher>) => {
-      queryClient.invalidateQueries({ queryKey: ['voucher'] })
+      invalidateQueries({ queryKey: ['voucher'] })
       // @ts-expect-error Inconsistent typing from API
       notifications.show({ message: `Successfully saved voucher: ${data.results.serial || data.results[0].serial}`, color: 'green' })
       close()
@@ -164,7 +164,7 @@ export default function Vouchers() {
   const { mutate: toggleMutate, variables: toggleVariables, reset: toggleReset } = useMutation({
     mutationFn: async (values: Voucher) => await api.patch(`set${values.available ? 'Inactive' : 'Active'}/${values.serial}`).json() as GetResponse<Voucher>,
     onSuccess: (data: GetResponse<Voucher>) => {
-      queryClient.invalidateQueries({ queryKey: ['voucher'] })
+      invalidateQueries({ queryKey: ['voucher'] })
       notifications.show({ message: `Successfully ${data.results.available ? 'activated' : 'deactivated'} voucher: ${data.results.serial}`, color: 'green' })
       close()
     },
@@ -177,7 +177,7 @@ export default function Vouchers() {
   return (
     <>
       <Modal size="lg" {...modalProps}>
-        <form onSubmit={form.onSubmit(values => saveMutate({ id, values }))}>
+        <form onSubmit={form.onSubmit(values => saveMutate({ id: String(id), values }))}>
           <Grid>
             <Grid.Col span={6}>
               <TextInput required label="Serial number" {...form.getInputProps('serial')} />

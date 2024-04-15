@@ -84,7 +84,7 @@ export default function Products() {
   return (
     <>
       <Modal {...modalProps}>
-        <form onSubmit={form.onSubmit(values => save({ values, id }))}>
+        <form onSubmit={form.onSubmit(values => save({ values, id: String(id) }))}>
           <TextInput required data-autofocus label="Product code" {...form.getInputProps('product_code')} />
           <NumberInput hideControls required mt="sm" label="Product ID" {...form.getInputProps('product_id')} />
           <TextInput required mt="sm" label="Product name" {...form.getInputProps('product_name')} />

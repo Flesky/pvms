@@ -1,14 +1,16 @@
 import { useState } from 'react'
 
 export default function useModal() {
-  const [state, setState] = useState({
+  const [state, setState] = useState<
+    { opened: boolean, title: string, id: string | number }
+  >({
     opened: false,
     title: '',
     id: '',
   })
 
   return {
-    open: (title: string, id = '') => {
+    open: (title: string, id?: string | number) => {
       setState({ opened: true, title, id })
     },
     close: () => {

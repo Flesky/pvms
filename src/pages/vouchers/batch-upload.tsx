@@ -13,7 +13,6 @@ import {
 } from '@mantine/core'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm, yupResolver } from '@mantine/form'
-import { notifications } from '@mantine/notifications'
 import type { InferType } from 'yup'
 import { mixed, number, object } from 'yup'
 import { useState } from 'react'
@@ -25,23 +24,6 @@ import api, { transformErrors } from '@/utils/api.ts'
 import type { GetAllResponse } from '@/types'
 import type { Product } from '@/pages/products.tsx'
 import AppClientTable from '@/components/AppClientTable.tsx'
-
-export interface ErrorSchema {
-  message: string
-  return_code: string
-  errors: {
-    batch_id: Array<string>
-    batch_count: Array<string>
-    product_id: Array<string>
-    file: Array<string>
-    rows: {
-      [row: string]: {
-        serial: Array<string>
-        PUK: Array<string>
-      }
-    }
-  }
-}
 
 export interface BatchUploadErrorResult extends ErrorResult {
   csv: {
@@ -78,7 +60,7 @@ const schema = object().shape({
 })
 
 export default function BatchUploadVouchers() {
-  const queryClient = useQueryClient()
+  const { invalidateQueries } = useQueryClient()
   const form = useForm<InferType<typeof schema>>({
     initialValues: {
       batch_id: 0,
@@ -118,8 +100,8 @@ export default function BatchUploadVouchers() {
       }>()
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['voucher'] })
-      notifications.show({ message: `Successfully uploaded CSV` })
+      invalidateQueries({ queryKey: ['voucher'] })
+      // notifications.show({ message: `Successfully uploaded CSV` })
     },
     onError: async (error) => {
       const { errors, csv, duplicated_rows, csvDuplicates }: BatchUploadErrorResult = await (error as HTTPError).response.json()
@@ -132,9 +114,13 @@ export default function BatchUploadVouchers() {
       // CSV duplicates: Duplicate entries were found in the database.
       // Duplicated rows: Duplicate entries were found in the CSV file.
 
-      const itemizedErrors = []
-      if (errors.length)
+      const itemizedErrors: Array<string> = []
+      if (errors.length) {
         itemizedErrors.push('Please check the form for errors and try again.')
+        errors.forEach(({ error_message }) => {
+          itemizedErrors.push(`• ${error_message}`)
+        })
+      }
       if (!Array.isArray(csvDuplicates) || duplicated_rows?.length)
         itemizedErrors.push('Duplicate entries were found in the CSV file.')
       setErrorMap({
