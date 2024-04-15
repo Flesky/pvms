@@ -20,7 +20,8 @@ import { useState } from 'react'
 import type { HTTPError } from 'ky'
 import { IconAlertCircle } from '@tabler/icons-react'
 import AppHeader from '@/components/AppHeader.tsx'
-import api from '@/utils/api.ts'
+import type { Error, ErrorResult } from '@/utils/api.ts'
+import api, { transformErrors } from '@/utils/api.ts'
 import type { GetAllResponse } from '@/types'
 import type { Product } from '@/pages/products.tsx'
 import AppClientTable from '@/components/AppClientTable.tsx'
@@ -40,6 +41,13 @@ export interface ErrorSchema {
       }
     }
   }
+}
+
+export interface BatchUploadErrorResult extends ErrorResult {
+  csv: {
+    serial: Array<string>
+    PUK: Array<string>
+  }
   duplicated_rows: [
     {
       serial: number
@@ -49,16 +57,19 @@ export interface ErrorSchema {
       rows: number[]
     },
   ]
-  csv: {
-    serial: Array<string>
-    PUK: Array<string>
-  }
+  csvDuplicates: {
+    rows: {
+      [rowNumber: string]: {
+        [key: string]: Error
+      }
+    }
+  } | []
 }
 
 const schema = object().shape({
-  batch_id: number().required(),
-  product_id: number().required(),
-  batch_count: number().required().min(1),
+  batch_id: number().required().label('Batch ID'),
+  product_id: number().required().label('Product reference'),
+  batch_count: number().required().min(1).label('Batch count'),
   file: mixed().test(
     'required',
     'File is required',
@@ -111,29 +122,54 @@ export default function BatchUploadVouchers() {
       notifications.show({ message: `Successfully uploaded CSV` })
     },
     onError: async (error) => {
-      const { errors, duplicated_rows, csv }: ErrorSchema = await (error as HTTPError).response.json()
-      const { batch_id, batch_count, product_id, file, rows } = errors
+      const { errors, csv, duplicated_rows, csvDuplicates }: BatchUploadErrorResult = await (error as HTTPError).response.json()
 
+      form.setErrors(transformErrors(errors))
       form.setFieldValue('file', [])
+      form.setFieldError('file', undefined)
 
-      setErrorMap({ errors:
-        [batch_id, batch_count, product_id, file, rows && 'Duplicate entries were found in the database.', duplicated_rows?.length ? 'Duplicate entries were found in the CSV file.' : null].flat(), data: csv.serial.map((serial, i) => ({
-        row_number: i + 1,
-        serial,
-        puk: csv.PUK[i],
-        // If row number + 1 is not in the errors object, return "Pass"
-        // cause: JSON.stringify(duplicated_rows.filter(({ rows }) => rows.includes(i + 1))),
-        // Use set addition to get the unique rows
-        conflicts: (rows && rows[String(i + 1)])
-          ? Object.keys(rows[String(i + 1)])
-        //  .map(key =>
-        //  key.charAt(0).toUpperCase() + key.slice(1),
-        // )
-          : [],
-        cause: duplicated_rows.filter(({ rows }) => rows.includes(i + 1)).length
-          ? `CSV: Rows ${JSON.stringify([...new Set(duplicated_rows.filter(({ rows }) => rows.includes(i + 1)).flatMap(({ rows }) => rows))])}`
-          : 'Database',
-      })) })
+      // Errors: Please check the form for errors and try again.
+      // CSV duplicates: Duplicate entries were found in the database.
+      // Duplicated rows: Duplicate entries were found in the CSV file.
+
+      const itemizedErrors = []
+      if (errors.length)
+        itemizedErrors.push('Please check the form for errors and try again.')
+      if (!Array.isArray(csvDuplicates) || duplicated_rows?.length)
+        itemizedErrors.push('Duplicate entries were found in the CSV file.')
+      setErrorMap({
+        errors: itemizedErrors,
+        data: csv.serial.map((serial, i) => ({
+          row_number: i + 1,
+          serial,
+          puk: csv.PUK[i],
+          conflicts: (!Array.isArray(csvDuplicates) && csvDuplicates?.rows[String(i + 1)])
+            ? Object.keys(csvDuplicates.rows[String(i + 1)])
+            : [],
+          cause: duplicated_rows.filter(({ rows }) => rows.includes(i + 1)).length
+            ? `CSV: Rows ${JSON.stringify([...new Set(duplicated_rows.filter(({ rows }) => rows.includes(i + 1)).flatMap(({ rows }) => rows))])}`
+            : 'Database',
+        })),
+      })
+
+      // setErrorMap({ errors:
+      //   [csvDuplicates && 'Duplicate entries were found in the database.', duplicated_rows?.length ? 'Duplicate entries were found in the CSV file.' : null].flat(), data: csv.serial.map((serial, i) => ({
+      //   row_number: i + 1,
+      //   serial,
+      //   puk: csv.PUK[i],
+      //   // If row number + 1 is not in the errors object, return "Pass"
+      //   // cause: JSON.stringify(duplicated_rows.filter(({ rows }) => rows.includes(i + 1))),
+      //   // Use set addition to get the unique rows
+      //   conflicts: (rows && rows[String(i + 1)])
+      //     ? Object.keys(rows[String(i + 1)])
+      //   //  .map(key =>
+      //   //  key.charAt(0).toUpperCase() + key.slice(1),
+      //   // )
+      //     : [],
+      //   cause: duplicated_rows.filter(({ rows }) => rows.includes(i + 1)).length
+      //     ? `CSV: Rows ${JSON.stringify([...new Set(duplicated_rows.filter(({ rows }) => rows.includes(i + 1)).flatMap(({ rows }) => rows))])}`
+      //     : 'Database',
+      // })) })
     },
   })
 

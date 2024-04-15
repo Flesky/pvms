@@ -1,8 +1,8 @@
 interface Result extends Record<string, unknown> {
-  id?: number
-  created_by?: number
-  created_at?: string
-  updated_at?: string
+  id: number
+  created_by: number
+  created_at: string
+  updated_at: string
 }
 
 interface GetResponse<T> {

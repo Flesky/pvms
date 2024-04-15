@@ -9,8 +9,9 @@ import Products from '../pages/products.tsx'
 import BatchUpload from '@/pages/vouchers/batch-upload.tsx'
 import Vouchers from '@/pages/vouchers'
 import BatchOrders from '@/pages/vouchers/batch-order.tsx'
-import ErrorMessages from '@/pages/config/messages.tsx'
+import ErrorCodes from '@/pages/config/error-codes.tsx'
 import AuditLog from '@/pages/audit-log'
+import Test from '@/pages/test.tsx'
 
 interface NavItem {
   to: string
@@ -47,8 +48,14 @@ const navLinks: NavLinks = [
     to: '/audit-log',
   },
 
+  // {
+  //   label: 'Test',
+  //   icon: IconHistory,
+  //   to: '/test',
+  // },
+
   { label: 'Configuration', icon: IconSettings, children: [
-    { to: '/settings/error-messages', label: 'Error messages' },
+    { to: '/settings/error-codes', label: 'Error message overrides' },
   ] },
   // { to: '/vouchers/add', label: 'Add VouchersDeprecated', icon: IconTicket },
 ]
@@ -70,7 +77,8 @@ const router = createBrowserRouter([
         element: <AuditLog />,
       },
 
-      { path: 'settings/error-messages', element: <ErrorMessages /> },
+      { path: 'settings/error-codes', element: <ErrorCodes /> },
+      { path: 'test', element: <Test /> },
     ],
     element: <DefaultLayout />,
     path: '/',

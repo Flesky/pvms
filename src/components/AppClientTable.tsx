@@ -9,7 +9,7 @@ interface Props<T> {
   id: string
   tableProps: DataTableProps<T>
   children?: ReactNode
-  defaultQuery?: string
+  defaultQuery?: string | null
 }
 
 export default function AppClientTable<T extends Record<string, any>>(props: Props<T>) {
@@ -35,7 +35,7 @@ export default function AppClientTable<T extends Record<string, any>>(props: Pro
   }, [records, search, page, pageSize])
 
   return (
-    <Stack gap={0} mih="300px" h="100%">
+    <Stack gap={0} h="100%">
       <Group px="md" className="border-b" py="sm" justify={children ? 'space-between' : 'end'}>
         {children}
         <TextInput
@@ -54,6 +54,7 @@ export default function AppClientTable<T extends Record<string, any>>(props: Pro
         />
       </Group>
       <DataTable
+        minHeight={250}
         horizontalSpacing="md"
         verticalSpacing="xs"
         {...tableProps}

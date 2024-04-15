@@ -6,7 +6,7 @@ import { modals } from '@mantine/modals'
 import { notifications } from '@mantine/notifications'
 import { IconAlertCircle, IconPlus } from '@tabler/icons-react'
 import type { HTTPError } from 'ky'
-import api from '../utils/api.ts'
+import api, { transformErrors } from '../utils/api.ts'
 import AppHeader from '../components/AppHeader.tsx'
 import AppClientTable from '../components/AppClientTable.tsx'
 import useModal from '../hooks/useModal.ts'
@@ -65,7 +65,7 @@ export default function Products() {
     onError: async (error: HTTPError) => {
       const errors = (await error.response?.json())?.errors
       if (errors)
-        form.setErrors(errors)
+        form.setErrors(transformErrors(errors))
       notifications.show({ message: 'Failed to save product.', color: 'red' })
     },
   })
