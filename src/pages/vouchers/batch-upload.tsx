@@ -10,11 +10,13 @@ import {
   Select,
   Stack,
   Text,
+  TextInput,
 } from '@mantine/core'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm, yupResolver } from '@mantine/form'
 import type { InferType } from 'yup'
-import { mixed, number, object } from 'yup'
+import { mixed, number, object, string } from 'yup'
+
 import { useState } from 'react'
 import type { HTTPError } from 'ky'
 import { IconAlertCircle } from '@tabler/icons-react'
@@ -55,7 +57,7 @@ export interface ErrorSchema {
 }
 
 const schema = object().shape({
-  batch_id: number().required(),
+  batch_id: string().required().label('Batch ID'),
   product_id: number().required(),
   batch_count: number().required().min(1),
   file: mixed().test(
@@ -69,7 +71,7 @@ export default function BatchUploadVouchers() {
   const queryClient = useQueryClient()
   const form = useForm<InferType<typeof schema>>({
     initialValues: {
-      batch_id: 0,
+      batch_id: '',
       product_id: 0,
       batch_count: 0,
       file: undefined,
@@ -145,7 +147,7 @@ export default function BatchUploadVouchers() {
           <Stack p="md" gap="lg">
             <div className="grid md:grid-cols-2 md:items-baseline">
               <Input.Label required>Batch ID</Input.Label>
-              <NumberInput aria-label="Batch ID" hideControls required {...form.getInputProps('batch_id')} />
+              <TextInput aria-label="Batch ID" hideControls required {...form.getInputProps('batch_id')} />
             </div>
             <div className="grid md:grid-cols-2 md:items-baseline">
               <Input.Label required>Product reference</Input.Label>

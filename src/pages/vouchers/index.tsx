@@ -283,6 +283,10 @@ export default function Vouchers() {
             {
               accessor: 'product_code',
             },
+            {
+              accessor: 'product_id',
+              title: 'Product ID',
+            },
             { accessor: 'expire_date' },
             { accessor: 'depleted', render: ({ available, deplete_date }) => available ? 'No' : deplete_date || 'Yes' },
             { accessor: 'value' },
