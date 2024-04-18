@@ -126,6 +126,10 @@ export default function Products() {
             },
             { accessor: 'product_name' },
             { accessor: 'supplier' },
+            { accessor: 'created_at', render: ({ created_at }) => new Date(created_at).toLocaleString() },
+            { accessor: 'created_by' },
+            { accessor: 'updated_at', render: ({ created_at, updated_at }) => (created_at === updated_at) ? '' : new Date(updated_at).toLocaleString() },
+            { accessor: 'updated_by' },
             {
               accessor: 'actions',
               title: 'Actions',

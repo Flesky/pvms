@@ -294,6 +294,10 @@ export default function Vouchers() {
             { accessor: 'IMSI', title: 'IMSI' },
             { accessor: 'PUK', title: 'PUK' },
             { accessor: 'available', title: 'Status', render: ({ available }) => (available ? 'Active' : 'Inactive') },
+            { accessor: 'created_at', render: ({ created_at }) => new Date(created_at).toLocaleString() },
+            { accessor: 'created_by' },
+            { accessor: 'updated_at', render: ({ created_at, updated_at }) => (created_at === updated_at) ? '' : new Date(updated_at).toLocaleString() },
+            { accessor: 'updated_by' },
             {
               accessor: 'actions',
               title: 'Actions',
