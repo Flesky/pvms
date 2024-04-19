@@ -86,8 +86,8 @@ export default function Products() {
     <>
       <Modal {...modalProps}>
         <form onSubmit={form.onSubmit(values => save({ values, id }))}>
-          <TextInput required data-autofocus label="Product code" {...form.getInputProps('product_code')} />
-          <NumberInput hideControls required mt="sm" label="Product ID" {...form.getInputProps('product_id')} />
+          <TextInput disabled={!!id} required data-autofocus label="Product code" {...form.getInputProps('product_code')} />
+          <NumberInput disabled={!!id} hideControls required mt="sm" label="Product ID" {...form.getInputProps('product_id')} />
           <TextInput required mt="sm" label="Product name" {...form.getInputProps('product_name')} />
           <TextInput required mt="sm" label="Supplier" {...form.getInputProps('supplier')} />
           {error && (
