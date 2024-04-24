@@ -316,7 +316,7 @@ export default function Vouchers() {
                     onClick={(e) => {
                       e.stopPropagation()
                       saveReset()
-                      form.setValues({ ...replaceNullWithEmptyString(row), expire_date: row.expire_date ? new Date(`${row.expire_date}T00:00:00`) as unknown as string : '' })
+                      form.setValues({ ...replaceNullWithEmptyString(row), product_id: String(row.product_id), expire_date: row.expire_date ? new Date(`${row.expire_date}T00:00:00`) as unknown as string : '' })
                       open(`Edit ${row.serial}`, row.serial)
                     }}
                   >
