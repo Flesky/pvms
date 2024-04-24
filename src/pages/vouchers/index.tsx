@@ -42,7 +42,6 @@ export interface Voucher extends Result {
 const schema = object().shape({
   serial: yup.string().trim().required().label('Serial'),
   value: yup.number().min(0).label('Value'),
-  product_code: yup.string().trim().required().label('Product code'),
   product_id: yup.number().nullable().label('Product ID'),
   expire_date: yup.string().trim().nullable().label('Expiry date'),
   IMEI: yup.string().trim().nullable().label('IMEI'),
@@ -117,7 +116,7 @@ export default function Vouchers() {
 
   const form = useForm<InferType<typeof schema>>({
     initialValues: {
-      product_code: '',
+      product_id: 0,
       value: 0,
       serial: '',
       expire_date: '',
@@ -191,8 +190,8 @@ export default function Vouchers() {
                 required
                 clearable
                 label="Product reference"
-                {...form.getInputProps('product_code')}
-                data={data?.products?.map(({ product_code, product_name }) => ({ label: product_name, value: product_code }))}
+                {...form.getInputProps('product_id')}
+                data={data?.products?.map(({ product_id, product_name }) => ({ label: product_name, value: String(product_id) }))}
               />
             </Grid.Col>
             <Grid.Col span={6}>
@@ -200,7 +199,7 @@ export default function Vouchers() {
                 disabled
                 label="Product ID"
                 value={form.values.product_id
-                || data?.products?.find(({ product_code }) => product_code === form.values.product_code)?.product_id || ''}
+                || data?.products?.find(({ product_id }) => product_id === form.values.product_id)?.product_id || ''}
               />
             </Grid.Col>
             <Grid.Col span={6}>
