@@ -94,6 +94,7 @@ export default function ErrorCodes() {
           columns: [
             { accessor: 'error_code' },
             { accessor: 'error_message' },
+            { accessor: 'error_description' },
             { accessor: 'updated_at', render: ({ created_at, updated_at }) => (created_at === updated_at) ? '' : new Date(updated_at).toLocaleString() },
             { accessor: 'updated_by' },
             {
