@@ -231,7 +231,7 @@ export default function BatchUploadVouchers() {
             <div className="grid md:grid-cols-2 md:items-baseline">
               <Input.Label required>Product reference</Input.Label>
               <Select
-                aria-label="Product reference"
+                aria-label="Voucher type"
                 searchable
                 clearable
                 data={voucherTypes?.map(({ id, voucher_code }) => ({ label: voucher_code, value: String(id) }))}
