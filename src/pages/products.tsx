@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Group, Modal, Select, Text, TextInput } from '@mantine/core'
+import { Alert, Button, Group, Modal, Text, TextInput } from '@mantine/core'
 import * as yup from 'yup'
 import { useForm, yupResolver } from '@mantine/form'
 import { modals } from '@mantine/modals'
@@ -86,18 +86,7 @@ export default function Products() {
           <TextInput disabled={!!id} required data-autofocus label="Product code" {...form.getInputProps('product_code')} />
           <TextInput required mt="sm" label="Product name" {...form.getInputProps('product_name')} />
           <TextInput required mt="sm" label="Supplier" {...form.getInputProps('supplier')} />
-          <Select
-            label="Product reference"
-            searchable
-            required
-            clearable
-            disabled
-            {...form.getInputProps('product_id')}
-            data={data?.products?.map(({ id, product_name }) => ({
-              label: product_name,
-              value: String(id),
-            }))}
-          />
+
           {error && (
             <Alert mt="md" title="Form validation failed" color="red" icon={<IconAlertCircle />}>
               Please check the form for errors and try again.
