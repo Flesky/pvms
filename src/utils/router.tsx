@@ -12,6 +12,7 @@ import BatchOrders from '@/pages/vouchers/batch-order.tsx'
 import ErrorCodes from '@/pages/config/error-codes.tsx'
 import AuditLog from '@/pages/audit-log'
 import Test from '@/pages/test.tsx'
+import VoucherTypes from '@/pages/vouchers/types.tsx'
 
 interface NavItem {
   to: string
@@ -37,6 +38,7 @@ const navLinks: NavLinks = [
   { to: '/', label: 'Products', icon: IconBox },
   // { to: '/vouchers', label: 'Vouchers', icon: IconTicket },
   { label: 'Vouchers', icon: IconTicket, children: [
+    { to: '/vouchers/types', label: 'Types' },
     { to: '/vouchers', label: 'View vouchers' },
     { to: '/vouchers/batch-orders', label: 'Batch orders' },
     { to: '/vouchers/batch-upload', label: 'Batch upload' },
@@ -68,6 +70,7 @@ const router = createBrowserRouter([
 
       { path: 'vouchers', children: [
         { path: '', element: <Vouchers /> },
+        { path: 'types', element: <VoucherTypes /> },
         { path: 'batch-orders', element: <BatchOrders /> },
         { path: 'batch-upload', element: <BatchUpload /> },
       ] },

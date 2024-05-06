@@ -4,8 +4,7 @@ import { useForm, yupResolver } from '@mantine/form'
 import type { InferType } from 'yup'
 import * as yup from 'yup'
 import { object } from 'yup'
-import { Alert, Button, Grid, Group, Modal, NumberInput, Select, TextInput } from '@mantine/core'
-import { DateInput } from '@mantine/dates'
+import { Alert, Button, Grid, Group, Modal, Select, TextInput, Textarea } from '@mantine/core'
 import { IconAlertCircle, IconPlus } from '@tabler/icons-react'
 import type { HTTPError } from 'ky'
 import { useSearchParams } from 'react-router-dom'
@@ -19,39 +18,35 @@ import useModal from '@/hooks/useModal.ts'
 import { replaceNullWithEmptyString } from '@/utils/functions.ts'
 import type { BatchOrder } from '@/pages/vouchers/batch-order.tsx'
 import { router } from '@/utils/router.tsx'
+import type { VoucherType } from '@/pages/vouchers/types.tsx'
 
 export interface Voucher extends Result {
   serial: string
-  value: number
-  expire_date: string
-  product_code: string
+  deplete_date?: any
   product_id: number
-  IMEI: string
-  SIMNarrative: string
-  PCN: string
-  SIMNo: string
+  voucher_type_id: number
+  SIM: any
   PUK: string
-  IMSI: string
-  service_reference: string
-  business_unit: string
-  deplete_date?: string
-  available?: number
-  batch_id?: string
+  IMSI: any
+  MSISDN: any
+  available: number
+  service_reference: any
+  business_unit: any
+  batch_id: string
+  note: any
 }
 
-const schema = object().shape({
+const schema = object({
   serial: yup.string().trim().required().label('Serial'),
-  value: yup.number().min(0).label('Value'),
   product_id: yup.number().nullable().label('Product ID'),
-  expire_date: yup.string().trim().nullable().label('Expiry date'),
-  IMEI: yup.string().trim().nullable().label('IMEI'),
-  SIMNarrative: yup.string().trim().nullable().label('SIM narrative'),
-  SIMNo: yup.string().trim().nullable().label('SIM number'),
-  PCN: yup.string().trim().nullable(),
-  PUK: yup.string().trim().required(),
-  IMSI: yup.string().trim().nullable(),
+  voucher_type_id: yup.number().nullable().label('Voucher type ID'),
+  PUK: yup.string().trim().required().label('PUK'),
+  SIM: yup.string().trim().nullable().label('SIM number'),
+  IMSI: yup.string().trim().nullable().label('IMSI'),
+  MSISDN: yup.string().trim().nullable().label('MSISDN'),
   service_reference: yup.string().trim().nullable().label('Service reference'),
   business_unit: yup.string().trim().nullable().label('Business unit'),
+  note: yup.string().trim().nullable().label('Note'),
 })
 
 export default function Vouchers() {
@@ -101,6 +96,10 @@ export default function Vouchers() {
         queryKey: ['batchOrder'],
         queryFn: async () => (await api.get('batchOrder').json<GetAllResponse<BatchOrder>>()).results,
       },
+      {
+        queryKey: ['voucherType'],
+        queryFn: async () => (await api.get('voucherType').json<GetAllResponse<VoucherType>>()).results,
+      },
     ],
     combine: (results) => {
       return {
@@ -108,6 +107,7 @@ export default function Vouchers() {
           vouchers: results[0].data,
           products: results[1].data,
           batchOrders: results[2].data,
+          voucherTypes: results[3].data,
         },
         isPending: results.some(result => result.isPending),
       }
@@ -116,24 +116,20 @@ export default function Vouchers() {
 
   const form = useForm<InferType<typeof schema>>({
     initialValues: {
-      product_id: 0,
-      value: 0,
       serial: '',
-      expire_date: '',
-
-      service_reference: '',
-      business_unit: '',
-      PCN: '',
-      IMEI: '',
-      SIMNarrative: '',
-      SIMNo: '',
-      IMSI: '',
+      product_id: null,
+      voucher_type_id: null,
       PUK: '',
+      SIM: null,
+      IMSI: null,
+      MSISDN: null,
+      service_reference: null,
+      business_unit: null,
+      note: null,
     },
     transformValues: (values) => {
       return {
         ...values,
-        expire_date: values.expire_date ? (values.expire_date as unknown as Date).toISOString().split('T')[0] : null,
       }
     },
     validate: yupResolver(schema),
@@ -179,55 +175,61 @@ export default function Vouchers() {
         <form onSubmit={form.onSubmit(values => saveMutate({ id, values }))}>
           <Grid>
             <Grid.Col span={6}>
-              <TextInput required label="Serial number" {...form.getInputProps('serial')} />
+              <TextInput required disabled label="Serial number" {...form.getInputProps('serial')} />
             </Grid.Col>
             <Grid.Col span={6}>
-              <NumberInput min={0} label="Value" {...form.getInputProps('value')} />
+              <TextInput required label="PUK" {...form.getInputProps('PUK')} />
             </Grid.Col>
             <Grid.Col span={6}>
               <Select
+                label="Product reference"
                 searchable
                 required
                 clearable
-                label="Product reference"
+                disabled
                 {...form.getInputProps('product_id')}
-                data={data?.products?.map(({ product_id, product_name }) => ({ label: product_name, value: String(product_id) }))}
+                data={data?.products?.map(({ id, product_name }) => ({
+                  label: product_name,
+                  value: String(id),
+                }))}
               />
             </Grid.Col>
+            {/* <Grid.Col span={6}> */}
+            {/*  <TextInput */}
+            {/*    disabled */}
+            {/*    label="Product ID" */}
+            {/*    value={form.values.product_id */}
+            {/*    || data?.products?.find(({ id }) => id === form.values.product_id)?.id || ''} */}
+            {/*  /> */}
+            {/* </Grid.Col> */}
             <Grid.Col span={6}>
-              <TextInput
+              <Select
+                label="Voucher type"
+                searchable
+                required
+                clearable
                 disabled
-                label="Product ID"
-                value={form.values.product_id
-                || data?.products?.find(({ product_id }) => product_id === form.values.product_id)?.product_id || ''}
+                data={data?.voucherTypes?.map(({ id, voucher_code }) => ({ label: voucher_code, value: String(id) }))}
+                {...form.getInputProps('voucher_type_id')}
               />
             </Grid.Col>
             <Grid.Col span={6}>
               <TextInput label="Service reference" {...form.getInputProps('service_reference')} />
             </Grid.Col>
             <Grid.Col span={6}>
-              <DateInput clearable label="Expiry date" {...form.getInputProps('expire_date')} />
-            </Grid.Col>
-            <Grid.Col span={6}>
               <TextInput label="Business unit" {...form.getInputProps('business_unit')} />
-            </Grid.Col>
-            <Grid.Col span={6}>
-              <TextInput label="IMEI" {...form.getInputProps('IMEI')} />
             </Grid.Col>
             <Grid.Col span={6}>
               <TextInput label="IMSI" {...form.getInputProps('IMSI')} />
             </Grid.Col>
             <Grid.Col span={6}>
-              <TextInput label="SIM narrative" {...form.getInputProps('SIMNarrative')} />
+              <TextInput label="SIM number" {...form.getInputProps('SIM')} />
             </Grid.Col>
             <Grid.Col span={6}>
-              <TextInput label="SIM number" {...form.getInputProps('SIMNo')} />
+              <TextInput label="MSISDN" {...form.getInputProps('MSISDN')} />
             </Grid.Col>
-            <Grid.Col span={3}>
-              <TextInput required label="PUK" {...form.getInputProps('PUK')} />
-            </Grid.Col>
-            <Grid.Col span={3}>
-              <TextInput label="PCN" {...form.getInputProps('PCN')} />
+            <Grid.Col span={12}>
+              <Textarea label="Note" {...form.getInputProps('note')} />
             </Grid.Col>
             {saveError && (
               <Grid.Col span={12}>
@@ -280,22 +282,21 @@ export default function Vouchers() {
               // )
             },
             {
-              accessor: 'product_code',
+              accessor: 'product_name',
+              title: 'Product',
             },
             {
-              accessor: 'product_id',
-              title: 'Product ID',
+              accessor: 'voucher_name',
+              title: 'Voucher type',
             },
-            { accessor: 'expire_date' },
             { accessor: 'depleted', render: ({ available, deplete_date }) => available ? 'No' : deplete_date || 'Yes' },
-            { accessor: 'value' },
             { accessor: 'service_reference', title: 'Service reference' },
             { accessor: 'business_unit' },
-            { accessor: 'IMEI', title: 'IMEI' },
-            { accessor: 'SIMNarrative', title: 'Narrative' },
-            { accessor: 'SIMNo', title: 'SIM number' },
+            { accessor: 'SIM', title: 'SIM' },
             { accessor: 'IMSI', title: 'IMSI' },
             { accessor: 'PUK', title: 'PUK' },
+            { accessor: 'MSISDN', title: 'MSISDN' },
+            { accessor: 'note', title: 'Note' },
             { accessor: 'available', title: 'Status', render: ({ available }) => (available ? 'Active' : 'Inactive') },
             { accessor: 'created_at', render: ({ created_at }) => new Date(created_at).toLocaleString() },
             { accessor: 'created_by' },
@@ -316,7 +317,7 @@ export default function Vouchers() {
                     onClick={(e) => {
                       e.stopPropagation()
                       saveReset()
-                      form.setValues({ ...replaceNullWithEmptyString(row), product_id: String(row.product_id), expire_date: row.expire_date ? new Date(`${row.expire_date}T00:00:00`) as unknown as string : '' })
+                      form.setValues({ ...replaceNullWithEmptyString(row), product_id: String(row.product_id), voucher_type_id: String(row.voucher_type_id), expire_date: row.expire_date ? new Date(`${row.expire_date}T00:00:00`) as unknown as string : '' })
                       open(`Edit ${row.serial}`, row.serial)
                     }}
                   >

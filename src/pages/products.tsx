@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Group, Modal, NumberInput, Text, TextInput } from '@mantine/core'
+import { Alert, Button, Group, Modal, Select, Text, TextInput } from '@mantine/core'
 import * as yup from 'yup'
 import { useForm, yupResolver } from '@mantine/form'
 import { modals } from '@mantine/modals'
@@ -15,14 +15,13 @@ import type { GetAllResponse, GetResponse, Result } from '@/types'
 
 export interface Product extends Result {
   product_code: string
-  product_id: number
   product_name: string
   supplier: string
+  status: 0 | 1
 }
 
 const schema = yup.object().shape({
   product_code: yup.string().trim().required().label('Product code'),
-  product_id: yup.string().required().label('Product ID'),
   product_name: yup.string().trim().required().label('Product name'),
   supplier: yup.string().trim().required().label('Supplier'),
 })
@@ -34,14 +33,12 @@ export default function Products() {
   const form = useForm({
     initialValues: {
       product_code: '',
-      product_id: '',
       product_name: '',
       supplier: '',
     },
     transformValues: (values) => {
       return {
         ...values,
-        product_id: Number.parseInt(values.product_id),
       }
     },
     validate: yupResolver(schema),
@@ -87,9 +84,20 @@ export default function Products() {
       <Modal {...modalProps}>
         <form onSubmit={form.onSubmit(values => save({ values, id }))}>
           <TextInput disabled={!!id} required data-autofocus label="Product code" {...form.getInputProps('product_code')} />
-          <NumberInput disabled={!!id} hideControls required mt="sm" label="Product ID" {...form.getInputProps('product_id')} />
           <TextInput required mt="sm" label="Product name" {...form.getInputProps('product_name')} />
           <TextInput required mt="sm" label="Supplier" {...form.getInputProps('supplier')} />
+          <Select
+            label="Product reference"
+            searchable
+            required
+            clearable
+            disabled
+            {...form.getInputProps('product_id')}
+            data={data?.products?.map(({ id, product_name }) => ({
+              label: product_name,
+              value: String(id),
+            }))}
+          />
           {error && (
             <Alert mt="md" title="Form validation failed" color="red" icon={<IconAlertCircle />}>
               Please check the form for errors and try again.
@@ -120,10 +128,6 @@ export default function Products() {
           fetching: isPending,
           columns: [
             { accessor: 'product_code' },
-            {
-              accessor: 'product_id',
-              title: 'Product ID',
-            },
             { accessor: 'product_name' },
             { accessor: 'supplier' },
             { accessor: 'created_at', render: ({ created_at }) => new Date(created_at).toLocaleString() },
@@ -140,10 +144,9 @@ export default function Products() {
                     size="xs"
                     variant="light"
                     color="gray"
-                    loading={saveIsPending && saveVariables?.values.product_id === row.product_id}
+                    loading={saveIsPending && saveVariables?.values.product_code === row.product_code}
                     disabled={saveIsPending && !!saveVariables}
                     onClick={() => {
-                      // @ts-expect-error ID can be cast
                       form.setValues(row)
                       saveReset()
                       open(`Edit ${row.product_code}`, row.product_code)
