@@ -229,7 +229,7 @@ export default function BatchUploadVouchers() {
               />
             </div>
             <div className="grid md:grid-cols-2 md:items-baseline">
-              <Input.Label required>Product reference</Input.Label>
+              <Input.Label required>Voucher type</Input.Label>
               <Select
                 aria-label="Voucher type"
                 searchable
