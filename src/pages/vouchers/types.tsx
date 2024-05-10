@@ -28,7 +28,7 @@ const schema = object({
 })
 
 export default function VoucherTypes() {
-  const { open, close, id, modalProps } = useModal<number>()
+  const { open, close, id, modalProps } = useModal<string>()
   const queryClient = useQueryClient()
 
   const form = useForm({
@@ -64,7 +64,7 @@ export default function VoucherTypes() {
   })
 
   const { mutate: save, isPending: saveIsPending, reset: saveReset, error, variables: saveVariables } = useMutation({
-    mutationFn: async ({ values, id }: { values: InferType<typeof schema>, id?: number }) =>
+    mutationFn: async ({ values, id }: { values: InferType<typeof schema>, id?: string }) =>
       (!id
         ? await api.post('voucherType', { json: values }).json()
         : await api.put(`voucherType/${id}`, { json: values }).json()) as GetResponse<VoucherType>,

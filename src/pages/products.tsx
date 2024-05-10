@@ -1,17 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Group, Modal, Text, TextInput } from '@mantine/core'
+import { Alert, Button, Group, Modal, TextInput } from '@mantine/core'
 import * as yup from 'yup'
 import { useForm, yupResolver } from '@mantine/form'
-import { modals } from '@mantine/modals'
 import { notifications } from '@mantine/notifications'
 import { IconAlertCircle, IconPlus } from '@tabler/icons-react'
 import type { HTTPError } from 'ky'
 import type { InferType } from 'yup'
 import api, { transformErrors } from '../utils/api.ts'
 import AppHeader from '../components/AppHeader.tsx'
-import AppClientTable from '../components/AppClientTable.tsx'
 import useModal from '../hooks/useModal.ts'
 import type { GetAllResponse, GetResponse, Result } from '@/types'
+import AppNewTable from '@/components/AppNewTable.tsx'
 
 export interface Product extends Result {
   product_code: string
@@ -110,72 +109,150 @@ export default function Products() {
           Add product
         </Button>
       </AppHeader>
-      <AppClientTable<Product>
-        id="products"
-        tableProps={{
-          records,
-          fetching: isPending,
-          columns: [
-            { accessor: 'product_code' },
-            { accessor: 'product_name' },
-            { accessor: 'supplier' },
-            { accessor: 'created_at', render: ({ created_at }) => new Date(created_at).toLocaleString() },
-            { accessor: 'created_by' },
-            { accessor: 'updated_at', render: ({ created_at, updated_at }) => (created_at === updated_at) ? '' : new Date(updated_at).toLocaleString() },
-            { accessor: 'updated_by' },
-            {
-              accessor: 'actions',
-              title: 'Actions',
-              textAlign: 'right',
-              render: row => (
-                <Group gap={4} justify="right" wrap="nowrap">
-                  <Button
-                    size="xs"
-                    variant="light"
-                    color="gray"
-                    loading={saveIsPending && saveVariables?.values.product_code === row.product_code}
-                    disabled={saveIsPending && !!saveVariables}
-                    onClick={() => {
-                      form.setValues(row)
-                      saveReset()
-                      open(`Edit ${row.product_code}`, row.product_code)
-                    }}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    size="xs"
-                    variant="light"
-                    color="red"
-                    loading={variables === row.product_code}
-                    onClick={() => modals.openConfirmModal({
-                      title: `Delete product`,
-                      children: <Text size="sm">
-                        Would you like to delete
-                        {' '}
-                        <Text component="span" fw={700}>{row.product_code}</Text>
-                        ? This action is permanent and irreversible.
-                        {/* eslint-disable-next-line style/jsx-closing-tag-location */}
-                      </Text>,
-                      labels: {
-                        cancel: 'Cancel',
-                        confirm: `Delete product`,
-                      },
-                      confirmProps: {
-                        color: 'red',
-                      },
-                      onConfirm: () => remove(row.product_code),
-                    })}
-                  >
-                    Delete
-                  </Button>
-                </Group>
-              )
-              ,
-            },
-          ],
-        }}
-      />
+
+      <AppNewTable
+        data={records}
+        isLoading={isPending}
+        columns={[
+          {
+            accessorKey: 'product_code',
+            header: 'Product Code',
+          },
+          {
+            accessorKey: 'product_name',
+            header: 'Product Name',
+          },
+          {
+            accessorKey: 'supplier',
+            header: 'Supplier',
+          },
+          {
+            accessorKey: 'status',
+            header: 'Status',
+            cell: ({ cell }) => cell.getValue() ? 'Active' : 'Inactive',
+          },
+          {
+            accessorKey: 'created_at',
+            header: 'Created At',
+            // render: ({ created_at }) => new Date(created_at).toLocaleString(),
+            cell: ({ cell }) => new Date(cell.getValue()).toLocaleString(),
+          },
+          {
+            accessorKey: 'created_by',
+            header: 'Created By',
+          },
+          {
+            accessorKey: 'updated_at',
+            header: 'Updated At',
+            cell: ({ row }) => (row.original.created_at === row.original.updated_at) ? '' : new Date(row.original.updated_at).toLocaleString(),
+          },
+          {
+            accessorKey: 'updated_by',
+            header: 'Updated By',
+          },
+          {
+            accessorKey: 'actions',
+            header: 'Actions',
+            cell: ({ row }) => (
+              <Group gap={4} justify="right" wrap="nowrap">
+                <Button
+                  size="xs"
+                  variant="light"
+                  color="gray"
+                  loading={saveIsPending && saveVariables?.values.product_code === row.original.product_code}
+                  disabled={saveIsPending && !!saveVariables}
+                  onClick={() => {
+                    form.setValues(row.original)
+                    saveReset()
+                    open(`Edit ${row.original.product_code}`, row.original.product_code)
+                  }}
+                >
+                  Edit
+                </Button>
+                <Button
+                  size="xs"
+                  variant="light"
+                  color="red"
+                  loading={variables === row.original.product_code}
+                  onClick={() => {
+                    open('Delete product', row.original.product_code)
+                  }}
+                >
+                  Delete
+                </Button>
+              </Group>
+            ),
+          },
+        ]}
+      >
+      </AppNewTable>
+
+      {/* <AppClientTable<Product> */}
+      {/*  id="products" */}
+      {/*  tableProps={{ */}
+      {/*    records, */}
+      {/*    fetching: isPending, */}
+      {/*    columns: [ */}
+      {/*      { accessor: 'product_code' }, */}
+      {/*      { accessor: 'product_name' }, */}
+      {/*      { accessor: 'supplier' }, */}
+      {/*      { accessor: 'created_at', render: ({ created_at }) => new Date(created_at).toLocaleString() }, */}
+      {/*      { accessor: 'created_by' }, */}
+      {/*      { accessor: 'updated_at', render: ({ created_at, updated_at }) => (created_at === updated_at) ? '' : new Date(updated_at).toLocaleString() }, */}
+      {/*      { accessor: 'updated_by' }, */}
+      {/*      { */}
+      {/*        accessor: 'actions', */}
+      {/*        title: 'Actions', */}
+      {/*        textAlign: 'right', */}
+      {/*        render: row => ( */}
+      {/*          <Group gap={4} justify="right" wrap="nowrap"> */}
+      {/*            <Button */}
+      {/*              size="xs" */}
+      {/*              variant="light" */}
+      {/*              color="gray" */}
+      {/*              loading={saveIsPending && saveVariables?.values.product_code === row.product_code} */}
+      {/*              disabled={saveIsPending && !!saveVariables} */}
+      {/*              onClick={() => { */}
+      {/*                form.setValues(row) */}
+      {/*                saveReset() */}
+      {/*                open(`Edit ${row.product_code}`, row.product_code) */}
+      {/*              }} */}
+      {/*            > */}
+      {/*              Edit */}
+      {/*            </Button> */}
+      {/*            <Button */}
+      {/*              size="xs" */}
+      {/*              variant="light" */}
+      {/*              color="red" */}
+      {/*              loading={variables === row.product_code} */}
+      {/*              onClick={() => modals.openConfirmModal({ */}
+      {/*                title: `Delete product`, */}
+      {/*                children: <Text size="sm"> */}
+      {/*                  Would you like to delete */}
+      {/*                  {' '} */}
+      {/*                  <Text component="span" fw={700}>{row.product_code}</Text> */}
+      {/*                  ? This action is permanent and irreversible. */}
+      {/*                  /!* eslint-disable-next-line style/jsx-closing-tag-location *!/ */}
+      {/*                </Text>, */}
+      {/*                labels: { */}
+      {/*                  cancel: 'Cancel', */}
+      {/*                  confirm: `Delete product`, */}
+      {/*                }, */}
+      {/*                confirmProps: { */}
+      {/*                  color: 'red', */}
+      {/*                }, */}
+      {/*                onConfirm: () => remove(row.product_code), */}
+      {/*              })} */}
+      {/*            > */}
+      {/*              Delete */}
+      {/*            </Button> */}
+      {/*          </Group> */}
+      {/*        ) */}
+      {/*        , */}
+      {/*      }, */}
+      {/*    ], */}
+      {/*  }} */}
+      {/* /> */}
     </>
   )
 }
