@@ -1,19 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 
-import { Button } from '@mantine/core'
-import { useState } from 'react'
 import type { ColumnDef } from '@tanstack/react-table'
+import { Button } from '@mantine/core'
 import AppHeader from '@/components/AppHeader.tsx'
 import AppNewTable from '@/components/AppNewTable.tsx'
 
 const columns: ColumnDef<Record<string, any>>[] = [
-  { accessorKey: 'id', header: 'ID' },
-  { accessorKey: 'title', header: 'Title' },
-  {
-    accessorKey: 'completed',
-    header: 'Completed',
-
-  },
 ]
 
 export default function Test() {
@@ -21,24 +13,38 @@ export default function Test() {
     queryKey: ['test'],
     queryFn: async () => {
       // Add delay
-      await new Promise(resolve => setTimeout(resolve, 2000))
       const response = await fetch('https://jsonplaceholder.typicode.com/todos')
       return response.json()
     },
   })
 
-  const [displayedData, setDisplayedData] = useState([])
-
   return (
     <>
+
       <AppHeader title="Table demo">
-        <Button
-          onClick={() => setDisplayedData(displayedData?.length ? [] : data)}
-        >
-          Toggle data
-        </Button>
       </AppHeader>
-      <AppNewTable data={displayedData} columns={columns} isLoading={isPending} />
+
+      <AppNewTable
+        data={data}
+        isLoading={isPending}
+        columns={[
+          { accessorKey: 'id', header: 'ID' },
+          { accessorKey: 'title', header: 'Title' },
+          {
+            accessorKey: 'completed',
+            header: 'Completed',
+          },
+          {
+            accessorKey: 'actions',
+            header: 'Actions',
+            cell: ({ row }) => (
+              <>
+                <Button variant="default">Mark as complete</Button>
+              </>
+            ),
+          },
+        ]}
+      />
 
     </>
   )

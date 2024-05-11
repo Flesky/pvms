@@ -10,6 +10,7 @@ import type {
   SortingState,
 } from '@tanstack/react-table'
 
+import type { TableProps } from '@mantine/core'
 import {
   ActionIcon,
   Box,
@@ -24,11 +25,12 @@ import {
   Table,
   Text,
   TextInput,
+  UnstyledButton,
 } from '@mantine/core'
 import {
-  IconCaretDownFilled,
-  IconCaretUpDownFilled,
-  IconCaretUpFilled,
+  IconArrowNarrowDown,
+  IconArrowNarrowUp,
+  IconArrowsVertical,
   IconChevronLeft,
   IconChevronRight,
   IconDatabaseOff,
@@ -45,6 +47,7 @@ interface Props<T extends RowData> {
   data: T[] | undefined
   columns: ColumnDef<T, any>[]
   isLoading?: boolean
+  tableProps?: Omit<TableProps, 'data' | 'children'>
 }
 
 interface ColumnFilter {
@@ -54,15 +57,14 @@ interface ColumnFilter {
 }
 
 export default function AppNewTable<T extends RowData>(props: Props<T>) {
-  const { data = [], columns, isLoading } = props
+  const { data = [], columns, isLoading, tableProps } = props
 
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({})
   const [sorting, setSorting] = useState<SortingState>([])
-
   const [search, setSearch] = useState('')
 
-  const [opened, { open, close }] = useDisclosure()
+  const [filtersOpened, { open: openFilters, close: closeFilters }] = useDisclosure()
   const [filters, { append, remove, setItemProp, setState: setFilters }] = useListState<ColumnFilter>([])
 
   const [appliedFilters, setAppliedFilters] = useState<ColumnFilter[]>([])
@@ -114,11 +116,13 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
     getSortedRowModel: getSortedRowModel(),
   })
 
+  const [highlightedColumn, setHighlightedColumn] = useState<string>()
+
   const dataColumns = useMemo(() => table.getAllColumns().filter(column => !['selection', 'actions'].includes(column.id)), [table.getAllColumns()])
 
   return (
     <>
-      <Modal size="lg" opened={opened} onClose={close} title="Filters">
+      <Modal size="lg" opened={filtersOpened} onClose={closeFilters} title="Filters">
         <form>
           <Stack gap="md">
             {
@@ -174,7 +178,7 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
                 onClick={() => {
                   setAppliedFilters([])
                   setFilters([])
-                  close()
+                  closeFilters()
                 }}
               >
                 Reset filters
@@ -182,7 +186,7 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
               <Button onClick={
                 () => {
                   setAppliedFilters(filters)
-                  close()
+                  closeFilters()
                 }
               }
               >
@@ -206,7 +210,7 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
           gap="xs"
         >
           <Button
-            onClick={open}
+            onClick={openFilters}
             variant="default"
             leftSection={<IconFilter size={16} />}
           >
@@ -219,14 +223,14 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
             onChange={e => setSearch(e.target.value)}
             placeholder="Quick search"
             rightSectionPointerEvents="all"
-            rightSection={!search
-              ? <IconSearch size={16} />
-              : (
+            rightSection={search
+              ? (
                 <CloseButton
                   aria-label="Clear input"
                   onClick={() => setSearch('')}
                 />
-            )}
+                )
+              : <IconSearch size={16} />}
           />
         </Group>
 
@@ -247,32 +251,50 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
             verticalSpacing="xs"
             stickyHeader
             highlightOnHover
+            {...tableProps}
           >
-            <Table.Thead>
-              <Table.Tr>
-                {table.getFlatHeaders().map(header => (
-                  <Table.Th key={header.id}>
-                    <Group gap="xs" className="text-nowrap" wrap="nowrap">
-                      {flexRender(header.column.columnDef.header, header.getContext())}
-                      {header.column.getCanSort()
-                      && (
-                        <ActionIcon
-                          variant="transparent"
-                          size="xs"
-                          color={!header.column.getIsSorted() ? 'gray.4' : 'gray'}
-                          onClick={header.column.getToggleSortingHandler()}
-                        >
-                          {{
-                            asc: <IconCaretUpFilled />,
-                            desc: <IconCaretDownFilled />,
-                          }[header.column.getIsSorted() as string] || <IconCaretUpDownFilled />}
-                        </ActionIcon>
-                      )}
-                    </Group>
-                  </Table.Th>
-                ))}
+            <Table.Thead
+              onMouseLeave={() => setHighlightedColumn(undefined)}
+            >
+              <Table.Tr bg="gray.2">
+                {table.getFlatHeaders().map((header) => {
+                  const isDataColumn = dataColumns.some(column => column.id === header.id)
+                  return (
+                    <UnstyledButton
+                      key={header.id}
+                      component={Table.Th}
+                      className="hover:bg-[var(--mantine-color-gray-3)]"
+                      bg={(highlightedColumn === header.id || header.column.getIsSorted()) ? 'gray.3' : undefined}
+                      onMouseOver={() => setHighlightedColumn(header.id)}
+                      onClick={isDataColumn ? header.column.getToggleSortingHandler() : undefined}
+                    >
+                      <Group justify="space-between" wrap="nowrap">
+                        <Text size="sm" fw={700} className="text-nowrap">
+                          {flexRender(header.column.columnDef.header, header.getContext())}
+                        </Text>
+                        {
+                          isDataColumn && (
+                            <ActionIcon
+                              className={highlightedColumn === header.id || header.column.getIsSorted() ? 'visible' : 'invisible'}
+                              variant="transparent"
+                              size="xs"
+                              color="dark.3"
+                            >
+                              {{
+                                asc: <IconArrowNarrowUp />,
+                                desc: <IconArrowNarrowDown />,
+                              }[header.column.getIsSorted() as string] || <IconArrowsVertical />}
+                            </ActionIcon>
+                          )
+                        }
+                      </Group>
+                    </UnstyledButton>
+                  )
+                },
+                )}
               </Table.Tr>
             </Table.Thead>
+
             <Table.Tbody>
               {table.getRowModel().rows.map(row => (
                 <Table.Tr key={row.id}>
@@ -334,6 +356,7 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
                     { value: '50', label: '50 / page' },
                     { value: '100', label: '100 / page' },
                   ]}
+                  allowDeselect={false}
                 >
                 </Select>
               </Group>
