@@ -18,7 +18,6 @@ import {
   Group,
   LoadingOverlay,
   Modal,
-  NumberInput,
   ScrollArea,
   Select,
   Stack,
@@ -27,9 +26,9 @@ import {
   TextInput,
 } from '@mantine/core'
 import {
-  IconArrowNarrowDown,
-  IconArrowNarrowUp,
-  IconArrowsUpDown,
+  IconCaretDownFilled,
+  IconCaretUpDownFilled,
+  IconCaretUpFilled,
   IconChevronLeft,
   IconChevronRight,
   IconDatabaseOff,
@@ -52,7 +51,6 @@ interface ColumnFilter {
   key: string
   mode: string
   value: string
-
 }
 
 export default function AppNewTable<T extends RowData>(props: Props<T>) {
@@ -78,6 +76,12 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
         switch (filter.mode) {
           case 'contains':
             return String(value).toLowerCase().includes(filter.value.toLowerCase())
+          // case 'starts_with':
+          //   return String(value).toLowerCase().startsWith(filter.value.toLowerCase())
+          // case 'ends_with':
+          //   return String(value).toLowerCase().endsWith(filter.value.toLowerCase())
+          // case 'equals':
+          //   return String(value).toLowerCase() === filter.value.toLowerCase()
           default:
             return true
         }
@@ -89,6 +93,7 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
     return _data.filter(row => Object.values(row).some(value => String(value).includes(search)))
   }, [data, search, appliedFilters])
   const rowCount = filteredData.length
+  const pageCount = Math.ceil(rowCount / pagination.pageSize)
 
   const table = useReactTable<T>({
     data: filteredData,
@@ -109,25 +114,7 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
     getSortedRowModel: getSortedRowModel(),
   })
 
-  const dataColumns = table.getAllColumns().filter(column => !['selection', 'actions'].includes(column.id))
-
-  const [pageNumber, setPageNumber] = useState(1)
-  function handlePageNumberChange(number: number) {
-    setPageNumber(() => {
-      if (number < 1) {
-        table.setPageIndex(0)
-        return 1
-      }
-      else if (number > Math.ceil(rowCount / pagination.pageSize)) {
-        table.setPageIndex(Math.ceil(rowCount / pagination.pageSize - 1))
-        return Math.ceil(rowCount / pagination.pageSize)
-      }
-      else {
-        table.setPageIndex(number - 1)
-        return number
-      }
-    })
-  }
+  const dataColumns = useMemo(() => table.getAllColumns().filter(column => !['selection', 'actions'].includes(column.id)), [table.getAllColumns()])
 
   return (
     <>
@@ -183,15 +170,14 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
             </Button>
             <Group mt="md" justify="space-between">
               <Button
-                color="red"
-                variant="light"
+                variant="default"
                 onClick={() => {
                   setAppliedFilters([])
                   setFilters([])
                   close()
                 }}
               >
-                Clear filters
+                Reset filters
               </Button>
               <Button onClick={
                 () => {
@@ -260,12 +246,13 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
             horizontalSpacing="md"
             verticalSpacing="xs"
             stickyHeader
+            highlightOnHover
           >
             <Table.Thead>
               <Table.Tr>
                 {table.getFlatHeaders().map(header => (
                   <Table.Th key={header.id}>
-                    <Group wrap="nowrap">
+                    <Group gap="xs" className="text-nowrap" wrap="nowrap">
                       {flexRender(header.column.columnDef.header, header.getContext())}
                       {header.column.getCanSort()
                       && (
@@ -276,9 +263,9 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
                           onClick={header.column.getToggleSortingHandler()}
                         >
                           {{
-                            asc: <IconArrowNarrowUp />,
-                            desc: <IconArrowNarrowDown />,
-                          }[header.column.getIsSorted() as string] || <IconArrowsUpDown />}
+                            asc: <IconCaretUpFilled />,
+                            desc: <IconCaretDownFilled />,
+                          }[header.column.getIsSorted() as string] || <IconCaretUpDownFilled />}
                         </ActionIcon>
                       )}
                     </Group>
@@ -316,85 +303,90 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
           </Stack>
         )}
 
-        <Group
-          style={{
-            borderTop: '1px solid var(--mantine-color-gray-3)',
-          }}
-          px="md"
-          py="xs"
-          justify="space-between"
-        >
-          <Text size="sm">
-            {/* eslint-disable-next-line style/jsx-one-expression-per-line */}
-            {Math.min(pagination.pageIndex * pagination.pageSize + 1, rowCount)} - {Math.min((pagination.pageIndex + 1) * pagination.pageSize, rowCount)} / {rowCount}
-          </Text>
+        {
+          !!pageCount
+          && (
+            <Group
+              style={{
+                borderTop: '1px solid var(--mantine-color-gray-3)',
+              }}
+              px="md"
+              py="xs"
+              justify="space-between"
+            >
+              <Group gap="xs">
+                <Select
+                  w={116}
+                  size="xs"
+                  styles={{
+                    input: {
+                      fontSize: 'var(--mantine-font-size-sm)',
+                    },
+                    option: {
+                      fontSize: 'var(--mantine-font-size-sm)',
+                    },
+                  }}
+                  value={String(pagination.pageSize)}
+                  onChange={pageSize => table.setPageSize(Number(pageSize))}
+                  data={[
+                    { value: '10', label: '10 / page' },
+                    { value: '25', label: '25 / page' },
+                    { value: '50', label: '50 / page' },
+                    { value: '100', label: '100 / page' },
+                  ]}
+                >
+                </Select>
+              </Group>
 
-          <Group gap="xs">
-            <ActionIcon
-              onClick={() => handlePageNumberChange(pageNumber - 1)}
-              disabled={!table.getCanPreviousPage()}
-              variant="default"
-            >
-              <IconChevronLeft size={16} />
-            </ActionIcon>
-            <NumberInput
-              value={pageNumber}
-              onKeyUp={e => e.key === 'Enter' && handlePageNumberChange(Number(e.currentTarget.value))}
-              onBlur={e => handlePageNumberChange(Number(e.target.value))}
-              mb="1px"
-              w={52}
-              styles={{
-                input: {
-                  fontSize: 'var(--mantine-font-size-sm)',
-                },
-              }}
-              size="xs"
-              placeholder="Page"
-              allowDecimal={false}
-              allowNegative={false}
-              hideControls
-            >
-            </NumberInput>
-            <Text size="sm">
-              {/* eslint-disable-next-line style/jsx-one-expression-per-line */}
-              / {Math.ceil(rowCount / pagination.pageSize) || 1}
-            </Text>
-            <ActionIcon
-              onClick={() => handlePageNumberChange(pageNumber + 1)}
-              disabled={!table.getCanNextPage()}
-              variant="default"
-            >
-              <IconChevronRight size={16} />
-            </ActionIcon>
-          </Group>
+              <Text size="sm">
+                {/* eslint-disable-next-line style/jsx-one-expression-per-line */}
+                {Math.min(pagination.pageIndex * pagination.pageSize + 1, table.getRowCount())} — {Math.min((pagination.pageIndex + 1) * pagination.pageSize, table.getRowCount())} of {table.getRowCount()} items
+              </Text>
 
-          <Group gap="xs">
-            <Select
-              w={116}
-              size="xs"
-              styles={{
-                input: {
-                  fontSize: 'var(--mantine-font-size-sm)',
-                },
-                option: {
-                  fontSize: 'var(--mantine-font-size-sm)',
-                },
-              }}
-              value={pagination.pageSize.toString()}
-              onChange={(e) => {
-                table.setPageSize(Number(e))
-                handlePageNumberChange(1)
-              }}
-              data={[
-                { value: '10', label: '10 / page' },
-                { value: '25', label: '25 / page' },
-                { value: '50', label: '50 / page' },
-                { value: '100', label: '100 / page' },
-              ]}
-            >
-            </Select>
-          </Group>
-        </Group>
+              <Group gap="xs">
+                <Select
+                  data={Array.from({ length: pageCount || 1 }, (_, i) => ({
+                    value: String(i + 1),
+                    label: String(i + 1),
+                  }))}
+                  value={String(pagination.pageIndex + 1)}
+                  onChange={page => table.setPageIndex(Number(page) - 1)}
+                  w={80}
+                  size="xs"
+                  searchable
+                  placeholder="Page"
+                  styles={{
+                    input: {
+                      fontSize: 'var(--mantine-font-size-sm)',
+                    },
+                    option: {
+                      fontSize: 'var(--mantine-font-size-sm)',
+                    },
+                  }}
+                >
+                </Select>
+                <Text size="sm">
+                  {/* eslint-disable-next-line style/jsx-one-expression-per-line */}
+                  of {pageCount} page{pageCount > 1 ? 's' : ''}
+                </Text>
+                <ActionIcon
+                  onClick={() => table.previousPage()}
+                  disabled={!table.getCanPreviousPage()}
+                  variant="default"
+                >
+                  <IconChevronLeft size={16} />
+                </ActionIcon>
+                <ActionIcon
+                  onClick={() => table.nextPage()}
+                  disabled={!table.getCanNextPage()}
+                  variant="default"
+                >
+                  <IconChevronRight size={16} />
+                </ActionIcon>
+              </Group>
+            </Group>
+          )
+        }
       </Stack>
     </>
   )
