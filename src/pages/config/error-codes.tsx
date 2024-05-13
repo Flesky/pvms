@@ -9,8 +9,8 @@ import type { InferType } from 'yup'
 import AppHeader from '@/components/AppHeader.tsx'
 import type { GetAllResponse, GetResponse, Result } from '@/types'
 import api, { transformErrors } from '@/utils/api.ts'
-import AppClientTable from '@/components/AppClientTable.tsx'
 import useModal from '@/hooks/useModal.ts'
+import AppNewTable from '@/components/AppNewTable.tsx'
 
 interface ErrorCode extends Result {
   error_code: string
@@ -86,71 +86,43 @@ export default function ErrorCodes() {
       </Modal>
 
       <AppHeader title="Error message overrides" />
-      <AppClientTable
-        id="error-codes"
-        tableProps={{
-          records,
-          fetching: isPending,
-          columns: [
-            { accessor: 'error_code' },
-            { accessor: 'error_message' },
-            { accessor: 'error_description' },
-            { accessor: 'updated_at', render: ({ created_at, updated_at }) => (created_at === updated_at) ? '' : new Date(updated_at).toLocaleString() },
-            { accessor: 'updated_by' },
-            {
-              accessor: 'actions',
-              title: 'Actions',
-              textAlign: 'right',
-              render: row => (
-                <Group gap={4} justify="right" wrap="nowrap">
-                  <Button
-                    size="xs"
-                    variant="light"
-                    color="gray"
-                    loading={saveIsPending && saveVariables?.values.error_code === row.error_code}
-                    disabled={saveIsPending && !!saveVariables}
-                    onClick={() => {
-                      form.setValues(row)
-                      saveReset()
-                      open(`Edit ${row.error_code}`, row.id)
-                    }}
-                  >
-                    Edit
-                  </Button>
-                  {/* <Button */}
-                  {/*  size="xs" */}
-                  {/*  variant="light" */}
-                  {/*  color="red" */}
-                  {/*  loading={variables === row.error_code} */}
-                  {/*  onClick={() => modals.openConfirmModal({ */}
-                  {/*    title: `Delete error message`, */}
-                  {/*    children: <Text size="sm"> */}
-                  {/*      Would you like to delete */}
-                  {/*      {' '} */}
-                  {/*      <Text component="span" fw={700}>{row.error_code}</Text> */}
-                  {/*      ? This action is permanent and irreversible. */}
-                  {/*      /!* eslint-disable-next-line style/jsx-closing-tag-location *!/ */}
-                  {/*    </Text>, */}
-                  {/*    labels: { */}
-                  {/*      cancel: 'Cancel', */}
-                  {/*      confirm: `Delete error message`, */}
-                  {/*    }, */}
-                  {/*    confirmProps: { */}
-                  {/*      color: 'red', */}
-                  {/*    }, */}
-                  {/*    onConfirm: () => remove(row.error_code), */}
-                  {/*  })} */}
-                  {/* > */}
-                  {/*  Delete */}
-                  {/* </Button> */}
-                </Group>
-              )
-              ,
-            },
-          ],
-        }}
+
+      <AppNewTable
+        data={records}
+        isLoading={isPending}
+        columns={[
+          { accessorKey: 'error_code', header: 'Error code' },
+          { accessorKey: 'error_message', header: 'Error message' },
+          { accessorKey: 'error_description', header: 'Error description' },
+          { accessorKey: 'updated_at', header: 'Updated at', cell: ({ row }) => (row.original.created_at === row.original.updated_at) ? '' : new Date(row.original.updated_at).toLocaleString() },
+          { accessorKey: 'updated_by', header: 'Updated by' },
+          {
+            accessorKey: 'actions',
+            header: 'Actions',
+            cell: ({ row }) => (
+              <Group gap={4} justify="right" wrap="nowrap">
+                <Button
+                  size="xs"
+                  variant="light"
+                  color="gray"
+                  loading={saveIsPending && saveVariables?.values.error_code === row.original.error_code}
+                  disabled={saveIsPending && !!saveVariables}
+                  onClick={() => {
+                    form.setValues(row.original)
+                    saveReset()
+                    open(`Edit ${row.original.error_code}`, row.original.id)
+                  }}
+                >
+                  Edit
+                </Button>
+              </Group>
+            )
+            ,
+          },
+        ]}
       >
-      </AppClientTable>
+      </AppNewTable>
+
     </>
   )
 }

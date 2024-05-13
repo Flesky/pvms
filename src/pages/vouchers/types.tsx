@@ -7,11 +7,11 @@ import { notifications } from '@mantine/notifications'
 import type { HTTPError } from 'ky'
 import api, { transformErrors } from '@/utils/api.ts'
 import type { GetAllResponse, GetResponse, Result } from '@/types'
-import AppClientTable from '@/components/AppClientTable.tsx'
 import AppHeader from '@/components/AppHeader.tsx'
 import useModal from '@/hooks/useModal.ts'
 import type { Product } from '@/pages/products.tsx'
 import { replaceNullWithEmptyString } from '@/utils/functions.ts'
+import AppNewTable from '@/components/AppNewTable.tsx'
 
 export interface VoucherType extends Result {
   id: number
@@ -88,7 +88,6 @@ export default function VoucherTypes() {
           <TextInput disabled={!!id} required label="Voucher code" {...form.getInputProps('voucher_code')} />
           <Select
             mt="sm"
-            data-autofocus
             label="Product reference"
             searchable
             required
@@ -124,54 +123,40 @@ export default function VoucherTypes() {
         </Button>
       </AppHeader>
 
-      <AppClientTable
-        id="voucherType"
-        tableProps={{
-          records: data?.voucherTypes,
-          fetching: isPending,
-          columns: [
-            {
-              accessor: 'product_name',
-            },
-            {
-              accessor: 'voucher_code',
-            },
-            {
-              accessor: 'voucher_name',
-            },
-            {
-              accessor: 'status',
-              render: ({ status }) => status === 1 ? 'Active' : 'Inactive',
-            },
-            {
-              accessor: 'actions',
-              title: 'Actions',
-              textAlign: 'right',
-              render: row => (
-                <Group gap={4} justify="right" wrap="nowrap">
-                  <Button
-                    size="xs"
-                    variant="light"
-                    color="gray"
-                    loading={saveIsPending && saveVariables?.values.voucher_code === row.voucher_code}
-                    disabled={saveIsPending && !!saveVariables}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      saveReset()
-                      form.setValues({ ...replaceNullWithEmptyString(row), product_id: String(row.product_id) })
-                      open(`Edit ${row.voucher_name}`, row.voucher_code)
-                    }}
-                  >
-                    Edit
-                  </Button>
-                </Group>
-              )
-              ,
-            },
-          ],
-        }}
+      <AppNewTable
+        data={data?.voucherTypes}
+        isLoading={isPending}
+        columns={[
+          { accessorKey: 'product_name', header: 'Product' },
+          { accessorKey: 'voucher_code', header: 'Voucher Code' },
+          { accessorKey: 'voucher_name', header: 'Voucher Name' },
+          {
+            accessorKey: 'status',
+            header: 'Status',
+            cell: ({ row }) => (row.original.status === 1 ? 'Active' : 'Inactive'),
+          },
+          {
+            accessorKey: 'actions',
+            header: 'Actions',
+            cell: ({ row }) => (
+              <>
+                <Button
+                  variant="default"
+                  onClick={() => {
+                    saveReset()
+                    form.setValues({ ...replaceNullWithEmptyString(row.original), product_id: String(row.original.product_id) })
+                    open(`Edit ${row.original.voucher_name}`, row.original.voucher_code)
+                  }}
+                >
+                  Edit
+                </Button>
+              </>
+            ),
+          },
+        ]}
       >
-      </AppClientTable>
+      </AppNewTable>
+
     </>
   )
 }

@@ -28,7 +28,7 @@ export default function Test() {
         data={data}
         isLoading={isPending}
         columns={[
-          { accessorKey: 'id', header: 'ID' },
+          { accessorKey: 'id', header: 'ID', sortingFn: 'basic' },
           { accessorKey: 'title', header: 'Title' },
           {
             accessorKey: 'completed',
