@@ -7,7 +7,6 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import type {
-  BuiltInSortingFn,
   ColumnDef,
 
   SortingState,
@@ -27,7 +26,6 @@ import {
   IconFilterExclamation,
   IconPlus,
   IconSearch,
-  IconSettings,
 } from '@tabler/icons-react'
 import { useMemo, useState } from 'react'
 import { useDebouncedValue, useDisclosure, useListState } from '@mantine/hooks'
@@ -48,14 +46,14 @@ interface ColumnFilter {
   value: string
 }
 
-const filters: Record<Partial<BuiltInSortingFn>, Record<string, Function>> = {
-  text: {
-    contains: (value: string, filter: string) => value.toLowerCase().includes(filter.toLowerCase()),
-    starts_with: (value: string, filter: string) => value.toLowerCase().startsWith(filter.toLowerCase()),
-    ends_with: (value: string, filter: string) => value.toLowerCase().endsWith(filter.toLowerCase()),
-    equals: (value: string, filter: string) => value.toLowerCase() === filter.toLowerCase(),
-  },
-}
+// const filters: Record<Partial<BuiltInSortingFn>, Record<string, Function>> = {
+//   text: {
+//     contains: (value: string, filter: string) => value.toLowerCase().includes(filter.toLowerCase()),
+//     starts_with: (value: string, filter: string) => value.toLowerCase().startsWith(filter.toLowerCase()),
+//     ends_with: (value: string, filter: string) => value.toLowerCase().endsWith(filter.toLowerCase()),
+//     equals: (value: string, filter: string) => value.toLowerCase() === filter.toLowerCase(),
+//   },
+// }
 
 export default function AppNewTable<T extends RowData>(props: Props<T>) {
   const { data = [], columns, isLoading, rootProps, tableProps } = props
@@ -63,10 +61,12 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({})
   const [sorting, setSorting] = useState<SortingState>([])
-  const [search, setSearch] = useState('')
-  const [globalFilter] = useDebouncedValue(search, 300, { leading: true })
+  const [globalFilterText, setGlobalFilterText] = useState('')
+  const [globalFilter] = useDebouncedValue(globalFilterText, 300, { leading: true })
 
   const [filtersOpened, { open: openFilters, close: closeFilters }] = useDisclosure()
+  const [settingsOpened, { open: openSettings, close: closeSettings }] = useDisclosure()
+
   const [filters, { append, remove, setItemProp, setState: setFilters }] = useListState<ColumnFilter>([])
 
   const [appliedFilters, setAppliedFilters] = useState<ColumnFilter[]>([])
@@ -108,7 +108,7 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
     onPaginationChange: setPagination,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
-    onGlobalFilterChange: setSearch,
+    onGlobalFilterChange: setGlobalFilterText,
     globalFilterFn: 'includesString',
     enableGlobalFilter: true,
 
@@ -204,6 +204,9 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
         </form>
       </Modal>
 
+      <Modal opened={settingsOpened} onClose={closeSettings} title="Settings">
+      </Modal>
+
       <Stack
         p="lg"
         // bg="#f9f9f9"
@@ -218,15 +221,15 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
           gap="xs"
         >
           <TextInput
-            value={search}
-            onChange={e => setSearch(e.target.value)}
+            value={globalFilterText}
+            onChange={e => setGlobalFilterText(e.target.value)}
             placeholder="Quick search"
             rightSectionPointerEvents="all"
-            rightSection={search
+            rightSection={globalFilterText
               ? (
                 <CloseButton
                   aria-label="Clear input"
-                  onClick={() => setSearch('')}
+                  onClick={() => setGlobalFilterText('')}
                 />
                 )
               : <IconSearch size={16} />}
@@ -242,12 +245,13 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
                 ? appliedFilters.length === 1 ? '1 filter' : `${appliedFilters.length} filters`
                 : 'Filters'}
             </Button>
-            <Button
-              variant="default"
-              leftSection={<IconSettings size={16} />}
-            >
-              Settings
-            </Button>
+            {/* <Button */}
+            {/*  onClick={openSettings} */}
+            {/*  variant="default" */}
+            {/*  leftSection={<IconSettings size={16} />} */}
+            {/* > */}
+            {/*  Settings */}
+            {/* </Button> */}
           </Group>
         </Group>
 
@@ -298,16 +302,20 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
                       <UnstyledButton
                         key={header.id}
                         component={Table.Th}
-                        className="hover:bg-[var(--mantine-color-gray-3)]"
-                        bg={(highlightedColumn === header.id || header.column.getIsSorted()) ? 'gray.3' : undefined}
+                        className="hover:bg-[var(--mantine-color-gray-2)]"
+                        bg={(highlightedColumn === header.id || header.column.getIsSorted()) ? 'gray.2' : undefined}
                         onMouseOver={() => setHighlightedColumn(header.id)}
                         onClick={isDataColumn ? header.column.getToggleSortingHandler() : undefined}
+                        // role={isDataColumn ? 'button' : undefined}
+                        // tabIndex={isDataColumn ? 0 : undefined}
                       >
-                        <Group justify="space-between" wrap="nowrap">
-                          <Text size="sm" fw={500} className="select-none text-nowrap" c="gray.7">
-                            {flexRender(header.column.columnDef.header, header.getContext())}
-                          </Text>
-                          {
+                        <Stack>
+
+                          <Group justify="space-between" wrap="nowrap">
+                            <Text size="sm" fw={500} className="select-none text-nowrap" c="gray.7">
+                              {flexRender(header.column.columnDef.header, header.getContext())}
+                            </Text>
+                            {
                               isDataColumn && (
                                 <Group wrap="nowrap" gap={0}>
                                   {/* <ActionIcon */}
@@ -333,7 +341,15 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
                                 </Group>
                               )
                             }
-                        </Group>
+                          </Group>
+                          {/* <TextInput */}
+                          {/*  variant="unstyled" */}
+                          {/*  className="border-b placeholder:!font-normal" */}
+                          {/*  placeholder="Filter" */}
+                          {/*  miw={100} */}
+                          {/* > */}
+                          {/* </TextInput> */}
+                        </Stack>
                       </UnstyledButton>
                     )
                   },
