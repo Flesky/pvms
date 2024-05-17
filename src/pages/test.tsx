@@ -14,7 +14,7 @@ export default function Test() {
     queryFn: async () => {
       // Add delay
       const response = await fetch('https://jsonplaceholder.typicode.com/todos')
-      return response.json()
+      return []
     },
   })
 
@@ -31,8 +31,11 @@ export default function Test() {
           { accessorKey: 'id', header: 'ID', sortingFn: 'basic' },
           { accessorKey: 'title', header: 'Title' },
           {
-            accessorKey: 'completed',
             header: 'Completed',
+            columns: [
+              { accessorKey: 'completed2', header: 'Completed', sortingFn: 'basic' },
+              { accessorKey: 'completed3', header: 'Completed', sortingFn: 'basic' },
+            ],
           },
           {
             accessorKey: 'actions',

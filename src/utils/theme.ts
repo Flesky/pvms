@@ -1,4 +1,4 @@
-import { createTheme } from '@mantine/core'
+import { Table, createTheme } from '@mantine/core'
 
 const theme = createTheme({
   colors: {
@@ -18,6 +18,20 @@ const theme = createTheme({
   },
   primaryColor: 'accent',
   primaryShade: 7,
+  components: {
+    Table: Table.Th.extend({
+      styles: {
+        fw: 500,
+      },
+      defaultProps: {
+        // c: 'dark.3',
+        className: 'text-nowrap',
+        styles: {
+          fw: 500,
+        },
+      },
+    }),
+  },
 })
 
 export default theme

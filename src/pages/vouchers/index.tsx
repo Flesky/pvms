@@ -24,6 +24,7 @@ export interface Voucher extends Result {
   serial: string
   deplete_date?: any
   product_id: number
+  voucher_code: string
   voucher_type_id: number
   SIM: any
   PUK: string
@@ -284,6 +285,10 @@ export default function Vouchers() {
             {
               accessor: 'product_name',
               title: 'Product',
+            },
+            {
+              accessor: 'voucher_code',
+              title: 'Voucher code',
             },
             {
               accessor: 'voucher_name',

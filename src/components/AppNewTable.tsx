@@ -122,8 +122,6 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
 
   const [highlightedColumn, setHighlightedColumn] = useState<string>()
 
-  const dataColumns = useMemo(() => table.getAllColumns().filter(column => !['selection', 'actions'].includes(column.id)), [table.getAllColumns()])
-
   return (
     <>
       <Modal size="lg" opened={filtersOpened} onClose={closeFilters} title="Filters">
@@ -135,7 +133,7 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
                   <Select
                     value={filter.key}
                     onChange={key => setItemProp(index, 'key', String(key))}
-                    data={dataColumns.map(column => ({
+                    data={table.getAllColumns().map(column => ({
                       value: column.id,
                       label: String(column.columnDef.header),
                     }))}
@@ -288,73 +286,60 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
               <Table.Thead
                 onMouseLeave={() => setHighlightedColumn(undefined)}
               >
-                <Table.Tr>
-                  {/* <Table.Th key="selection"> */}
-                  {/*  <Checkbox */}
-                  {/*    checked={table.getIsAllRowsSelected()} */}
-                  {/*    onChange={table.getToggleAllRowsSelectedHandler()} */}
-                  {/*  /> */}
-                  {/* </Table.Th> */}
-
-                  {table.getFlatHeaders().map((header) => {
-                    const isDataColumn = dataColumns.some(column => column.id === header.id)
-                    return (
-                      <UnstyledButton
-                        key={header.id}
-                        component={Table.Th}
-                        className="hover:bg-[var(--mantine-color-gray-2)]"
-                        bg={(highlightedColumn === header.id || header.column.getIsSorted()) ? 'gray.2' : undefined}
-                        onMouseOver={() => setHighlightedColumn(header.id)}
-                        onClick={isDataColumn ? header.column.getToggleSortingHandler() : undefined}
-                        // role={isDataColumn ? 'button' : undefined}
-                        // tabIndex={isDataColumn ? 0 : undefined}
-                      >
-                        <Stack>
-
-                          <Group justify="space-between" wrap="nowrap">
-                            <Text size="sm" fw={500} className="select-none text-nowrap" c="gray.7">
-                              {flexRender(header.column.columnDef.header, header.getContext())}
-                            </Text>
-                            {
-                              isDataColumn && (
-                                <Group wrap="nowrap" gap={0}>
-                                  {/* <ActionIcon */}
-                                  {/*  className={highlightedColumn === header.id ? 'visible' : 'invisible'} */}
-                                  {/*  variant="subtle" */}
-                                  {/*  size="sm" */}
-                                  {/*  color="dark.5" */}
-                                  {/*  onClick={() => {}} */}
-                                  {/* > */}
-                                  {/*  <IconFilter size={16} /> */}
-                                  {/* </ActionIcon> */}
-                                  <ActionIcon
-                                    className={highlightedColumn === header.id || header.column.getIsSorted() ? 'visible' : 'invisible'}
-                                    variant="subtle"
-                                    size="sm"
-                                    color="dark.5"
-                                  >
-                                    {{
-                                      asc: <IconArrowNarrowUp size={16} />,
-                                      desc: <IconArrowNarrowDown size={16} />,
-                                    }[header.column.getIsSorted() as string] || <IconArrowsVertical size={16} />}
-                                  </ActionIcon>
-                                </Group>
-                              )
-                            }
-                          </Group>
-                          {/* <TextInput */}
-                          {/*  variant="unstyled" */}
-                          {/*  className="border-b placeholder:!font-normal" */}
-                          {/*  placeholder="Filter" */}
-                          {/*  miw={100} */}
-                          {/* > */}
-                          {/* </TextInput> */}
-                        </Stack>
-                      </UnstyledButton>
-                    )
-                  },
-                  )}
-                </Table.Tr>
+                {table.getHeaderGroups().map(headerGroup => (
+                  <Table.Tr key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => {
+                      const isDataColumn = header.column.getCanSort()
+                      { /* TODO: Don't use buttons for parent columns */ }
+                      return header.isPlaceholder
+                        ? <Table.Th key={header.id} colSpan={header.colSpan} />
+                        : (
+                          <UnstyledButton
+                            key={header.id}
+                            component={Table.Th}
+                            bg={(highlightedColumn === header.id || header.column.getIsSorted()) ? 'gray.2' : undefined}
+                            onMouseOver={() => setHighlightedColumn(header.id)}
+                            onClick={isDataColumn ? header.column.getToggleSortingHandler() : undefined}
+                            colSpan={header.colSpan}
+                          >
+                            <Stack>
+                              <Group justify="space-between" wrap="nowrap">
+                                <Text size="sm" fw={500} className="select-none text-nowrap" c="dark.3">
+                                  {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                                </Text>
+                                {
+                                  isDataColumn && (
+                                    <Group wrap="nowrap" gap={0}>
+                                      {/* <ActionIcon */}
+                                      {/*  className={highlightedColumn === header.id ? 'visible' : 'invisible'} */}
+                                      {/*  variant="subtle" */}
+                                      {/*  size="sm" */}
+                                      {/*  color="dark.5" */}
+                                      {/*  onClick={() => {}} */}
+                                      {/* > */}
+                                      {/*  <IconFilter size={16} /> */}
+                                      {/* </ActionIcon> */}
+                                      <ActionIcon
+                                        className={highlightedColumn === header.id || header.column.getIsSorted() ? 'visible' : 'invisible'}
+                                        variant="subtle"
+                                        size="sm"
+                                        color="dark.5"
+                                      >
+                                        {{
+                                          asc: <IconArrowNarrowUp size={16} />,
+                                          desc: <IconArrowNarrowDown size={16} />,
+                                        }[header.column.getIsSorted() as string] || <IconArrowsVertical size={16} />}
+                                      </ActionIcon>
+                                    </Group>
+                                  )
+                                }
+                              </Group>
+                            </Stack>
+                          </UnstyledButton>
+                          )
+                    })}
+                  </Table.Tr>
+                ))}
               </Table.Thead>
 
               <Table.Tbody>
@@ -380,7 +365,7 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
 
           {!table.getPageCount() && !isLoading
           && (
-            <Stack gap="xs" mih={100} m="lg" justify="center" align="center" className="grow">
+            <Stack gap="xs" mih={150} m="lg" justify="center" align="center" className="grow">
               <Box
 
                 bg="gray.2"
@@ -401,88 +386,85 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
           )}
         </Card>
 
-        {
-          !!table.getPageCount() && (
-            <Group
-              justify="space-between"
+        <Group
+          justify="space-between"
+        >
+          <Group gap="xs">
+            <Select
+              w={116}
+              size="xs"
+              styles={{
+                input: {
+                  fontSize: 'var(--mantine-font-size-sm)',
+                },
+                option: {
+                  fontSize: 'var(--mantine-font-size-sm)',
+                },
+              }}
+              value={String(pagination.pageSize)}
+              onChange={pageSize => table.setPageSize(Number(pageSize))}
+              data={[
+                { value: '10', label: '10 / page' },
+                { value: '25', label: '25 / page' },
+                { value: '50', label: '50 / page' },
+                { value: '100', label: '100 / page' },
+              ]}
+              allowDeselect={false}
             >
-              <Group gap="xs">
-                <Select
-                  w={116}
-                  size="xs"
-                  styles={{
-                    input: {
-                      fontSize: 'var(--mantine-font-size-sm)',
-                    },
-                    option: {
-                      fontSize: 'var(--mantine-font-size-sm)',
-                    },
-                  }}
-                  value={String(pagination.pageSize)}
-                  onChange={pageSize => table.setPageSize(Number(pageSize))}
-                  data={[
-                    { value: '10', label: '10 / page' },
-                    { value: '25', label: '25 / page' },
-                    { value: '50', label: '50 / page' },
-                    { value: '100', label: '100 / page' },
-                  ]}
-                  allowDeselect={false}
-                >
-                </Select>
-              </Group>
+            </Select>
+          </Group>
 
-              <Text size="sm">
-                {/* eslint-disable-next-line style/jsx-one-expression-per-line */}
-                {Math.min(pagination.pageIndex * pagination.pageSize + 1, table.getRowCount())} — {Math.min(pagination.pageIndex * pagination.pageSize + table.getPaginationRowModel().rows.length, table.getRowCount())} of {table.getFilteredRowModel().rows.length} items
-              </Text>
+          <Text size="sm">
+            {/* eslint-disable-next-line style/jsx-one-expression-per-line */}
+            {Math.min(pagination.pageIndex * pagination.pageSize + 1, table.getRowCount())} — {Math.min(pagination.pageIndex * pagination.pageSize + table.getPaginationRowModel().rows.length, table.getRowCount())} of {table.getFilteredRowModel().rows.length} items
+          </Text>
 
-              <Group gap="xs">
-                <Select
-                  data={Array.from({ length: table.getPageCount() || 1 }, (_, i) => ({
-                    value: String(i + 1),
-                    label: String(i + 1),
-                  }))}
-                  value={String(pagination.pageIndex + 1)}
-                  onChange={page => table.setPageIndex(Number(page) - 1)}
-                  w={80}
-                  size="xs"
-                  searchable
-                  placeholder="Page"
-                  styles={{
-                    input: {
-                      fontSize: 'var(--mantine-font-size-sm)',
-                    },
-                    option: {
-                      fontSize: 'var(--mantine-font-size-sm)',
-                    },
-                  }}
-                >
-                </Select>
-                <Text size="sm">
-                  {/* eslint-disable-next-line style/jsx-one-expression-per-line */}
-                  of {table.getPageCount()} page{table.getPageCount() > 1 ? 's' : ''}
-                </Text>
-                <Group gap={4}>
+          <Group gap="xs">
+            <Select
+              data={Array.from({ length: table.getPageCount() }, (_, i) => ({
+                value: String(i + 1),
+                label: String(i + 1),
+              }))}
+              value={String(pagination.pageIndex + 1)}
+              onChange={page => table.setPageIndex(Number(page) - 1)}
+              w={80}
+              size="xs"
+              searchable
+              placeholder="Page"
+              styles={{
+                input: {
+                  fontSize: 'var(--mantine-font-size-sm)',
+                },
+                option: {
+                  fontSize: 'var(--mantine-font-size-sm)',
+                },
+              }}
+            >
+            </Select>
+            <Text size="sm">
+              {/* eslint-disable-next-line style/jsx-one-expression-per-line */}
+              of {table.getPageCount()} page{table.getPageCount() === 1 ? '' : 's'}
+            </Text>
+            <Group gap={4}>
 
-                  <ActionIcon
-                    onClick={() => table.previousPage()}
-                    disabled={!table.getCanPreviousPage()}
-                    variant="default"
-                  >
-                    <IconChevronLeft size={16} />
-                  </ActionIcon>
-                  <ActionIcon
-                    onClick={() => table.nextPage()}
-                    disabled={!table.getCanNextPage()}
-                    variant="default"
-                  >
-                    <IconChevronRight size={16} />
-                  </ActionIcon>
-                </Group>
-              </Group>
+              <ActionIcon
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+                variant="default"
+              >
+                <IconChevronLeft size={16} />
+              </ActionIcon>
+              <ActionIcon
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+                variant="default"
+              >
+                <IconChevronRight size={16} />
+              </ActionIcon>
             </Group>
-          )
-        }
+          </Group>
+        </Group>
+
       </Stack>
     </>
   )
