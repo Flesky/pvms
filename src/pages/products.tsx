@@ -169,17 +169,17 @@ export default function Products() {
                 >
                   Edit
                 </Button>
-                <Button
-                  size="xs"
-                  variant="light"
-                  color="red"
-                  loading={variables === row.original.product_code}
-                  onClick={() => {
-                    open('Delete product', row.original.product_code)
-                  }}
-                >
-                  Delete
-                </Button>
+                {/* <Button */}
+                {/*  size="xs" */}
+                {/*  variant="light" */}
+                {/*  color="red" */}
+                {/*  loading={variables === row.original.product_code} */}
+                {/*  onClick={() => { */}
+                {/*    open('Delete product', row.original.product_code) */}
+                {/*  }} */}
+                {/* > */}
+                {/*  Delete */}
+                {/* </Button> */}
               </Group>
             ),
           },

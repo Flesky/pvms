@@ -224,7 +224,7 @@ export default function BatchUploadVouchers() {
                 aria-label="Product reference"
                 searchable
                 clearable
-                data={products?.map(({ id, product_name }) => ({ label: product_name, value: String(id) }))}
+                data={products?.map(({ id, supplier, product_name }) => ({ label: `${supplier}: ${product_name}`, value: String(id) }))}
                 {...form.getInputProps('product_id')}
               />
             </div>
@@ -236,7 +236,7 @@ export default function BatchUploadVouchers() {
                 clearable
                 disabled={!form.values.product_id}
                 data={voucherTypes?.filter(({ product_id }) => product_id === Number(form.values.product_id))
-                  .map(({ id, voucher_code, voucher_name }) => ({ label: `${voucher_code} - ${voucher_name}`, value: String(id) }))}
+                  .map(({ id, voucher_code, voucher_name }) => ({ label: `${voucher_code}: ${voucher_name}`, value: String(id) }))}
                 {...form.getInputProps('voucher_type_id')}
               />
             </div>
