@@ -28,10 +28,10 @@ function Layout() {
       header={{ height: 60 }}
       layout="alt"
     >
-      <AppShell.Navbar>
-        <Box bg="#1A1B41" p="md">
+      <AppShell.Navbar bg="#1A1B41">
+        <Box p="md">
           <Group mt="md" justify="space-between">
-            <img className="w-32" src="/pulsar-blue.png" alt="Pivotel logo" />
+            <img className="w-32" src="/pulsar-blue.png" alt="Pulsar logo" />
             <Burger color="white" opened={true} onClick={toggleMobile} hiddenFrom="sm" size="sm" />
           </Group>
           <Text mt="8px" mb="xl" c="white">Voucher Management System</Text>

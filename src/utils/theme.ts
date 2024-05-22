@@ -1,6 +1,34 @@
-import { Table, createTheme } from '@mantine/core'
+import { NavLink, Table, createTheme } from '@mantine/core'
 
 const theme = createTheme({
+  primaryColor: 'accent',
+  primaryShade: 6,
+  components: {
+    Table: Table.Th.extend({
+      styles: {
+        fw: 500,
+      },
+      defaultProps: {
+        // c: 'dark.3',
+        className: 'text-nowrap',
+        styles: {
+          fw: 500,
+        },
+      },
+    }),
+    NavLink: NavLink.extend({
+      defaultProps: {
+        c: 'white',
+        variant: 'filled',
+        classNames: {
+          root: '!hover:bg-gray-5',
+        },
+        style: {
+          '--mantine-color-gray-0': '#0057a680',
+        },
+      },
+    }),
+  },
   colors: {
     accent: [
       '#e4f6ff',
@@ -38,22 +66,6 @@ const theme = createTheme({
       '#a14429',
       '#8e381e',
     ],
-  },
-  primaryColor: 'accent',
-  primaryShade: 6,
-  components: {
-    Table: Table.Th.extend({
-      styles: {
-        fw: 500,
-      },
-      defaultProps: {
-        // c: 'dark.3',
-        className: 'text-nowrap',
-        styles: {
-          fw: 500,
-        },
-      },
-    }),
   },
 })
 
