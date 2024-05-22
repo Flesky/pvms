@@ -29,12 +29,12 @@ function Layout() {
       layout="alt"
     >
       <AppShell.Navbar>
-        <Box bg="accent" p="md">
+        <Box bg="#1A1B41" p="md">
           <Group mt="md" justify="space-between">
-            <img className="w-32" src="/pivotel.png" alt="Pivotel logo" />
+            <img className="w-32" src="/pulsar-blue.png" alt="Pivotel logo" />
             <Burger color="white" opened={true} onClick={toggleMobile} hiddenFrom="sm" size="sm" />
           </Group>
-          <Text mt="6px" mb="xl" c="white">Voucher Management System</Text>
+          <Text mt="8px" mb="xl" c="white">Voucher Management System</Text>
         </Box>
         <Stack p="md" className="h-full" justify="space-between">
           <div>
