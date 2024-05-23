@@ -3,3 +3,24 @@
 }
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+    font-family: 'SwissNow';
+    font-style: normal;
+    font-weight: 400;
+    src: url('./assets/fonts/SwissNow-Regular.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'SwissNow';
+    font-style: normal;
+    font-weight: 500;
+    src: url('./assets/fonts/SwissNow-Medium.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'SwissNow';
+    font-style: normal;
+    font-weight: 700;
+    src: url('./assets/fonts/SwissNow-Bold.woff2') format('woff2');
+}

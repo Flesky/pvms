@@ -3,6 +3,7 @@ import { NavLink, Table, createTheme } from '@mantine/core'
 const theme = createTheme({
   primaryColor: 'accent',
   primaryShade: 6,
+  fontFamily: 'SwissNow, sans-serif',
   components: {
     Table: Table.Th.extend({
       styles: {
