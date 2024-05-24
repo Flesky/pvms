@@ -1,9 +1,11 @@
 import { Outlet, NavLink as RouterNavLink, matchPath, useLocation } from 'react-router-dom'
-import { AppShell, Box, Burger, Button, Group, NavLink, Stack, Text } from '@mantine/core'
+import { AppShell, Avatar, Box, Burger, Group, Menu, NavLink, Stack, Text, UnstyledButton, rem } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { createContext } from 'react'
 import { useAuth, withAuthenticationRequired } from 'react-oidc-context'
+import { IconChevronRight } from '@tabler/icons-react'
 import { navLinks } from './utils/router'
+import { changePasswordUrl } from '@/utils/oidc.ts'
 
 export const NavbarContext = createContext({
   toggleDesktop: () => {},
@@ -36,8 +38,8 @@ function Layout() {
           </Group>
           <Text mt="8px" mb="xl" c="white">Voucher Management System</Text>
         </Box>
-        <Stack p="md" className="h-full" justify="space-between">
-          <div>
+        <Stack className="h-full" justify="space-between">
+          <Stack p="md" gap={0}>
             {navLinks.map((item) => {
               if ('to' in item) {
                 return (
@@ -93,16 +95,58 @@ function Layout() {
                 )
               }
             })}
-          </div>
-          <Button
-            onClick={async () => {
-              await auth.signoutRedirect()
-            }}
-            color="red"
-            variant="light"
-          >
-            Log out
-          </Button>
+          </Stack>
+          <Menu withArrow>
+            <Menu.Target>
+              <UnstyledButton className="px-4 py-3 hover:bg-white/10">
+                <Group c="white">
+                  <Avatar
+                    bg="gray.2"
+                    radius="xl"
+                  />
+
+                  <div className="flex-1">
+                    <Text size="sm" fw={500}>
+                      {auth.user?.profile.preferred_username}
+                    </Text>
+
+                    <Text c="dimmed" size="xs">
+                      {auth.user?.profile.email}
+                    </Text>
+                  </div>
+
+                  <IconChevronRight style={{ width: rem(14), height: rem(14) }} stroke={1.5} />
+                </Group>
+              </UnstyledButton>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Item component="a" href={changePasswordUrl}>
+                Change password
+              </Menu.Item>
+              <Menu.Item
+                onClick={async () => {
+                  await auth.signoutRedirect()
+                }}
+              >
+                Log out
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
+          {/* <Button */}
+          {/*  onClick={async () => { */}
+          {/*    await auth.signoutRedirect() */}
+          {/*  }} */}
+          {/*  color="red" */}
+          {/*  variant="light" */}
+          {/* > */}
+          {/*  Log out */}
+          {/* </Button> */}
+          {/* <Button */}
+          {/*  component="a" */}
+          {/*  href={changePasswordUrl} */}
+          {/* > */}
+          {/*  {JSON.stringify(auth.user?.profile.preferred_username)} */}
+          {/* </Button> */}
         </Stack>
       </AppShell.Navbar>
       <AppShell.Main className="h-dvh">

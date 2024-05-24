@@ -25,7 +25,7 @@ const theme = createTheme({
           root: '!hover:bg-gray-5',
         },
         style: {
-          '--mantine-color-gray-0': '#0057a680',
+          '--mantine-color-gray-0': '#ffffff20',
         },
       },
     }),

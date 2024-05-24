@@ -23,7 +23,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <AuthProvider
       {...config}
-      onSigninCallback={() => window.history.replaceState({}, document.title, window.location.pathname)}
+      onSigninCallback={() => {
+        window.history.replaceState({}, document.title, window.location.pathname)
+      }}
     >
       <MantineProvider theme={theme}>
         <ModalsProvider
