@@ -210,7 +210,8 @@ export default function Vouchers() {
                 required
                 clearable
                 disabled
-                data={data?.voucherTypes?.map(({ id, voucher_code }) => ({ label: voucher_code, value: String(id) }))}
+                data={data?.voucherTypes?.filter(({ product_id }) => product_id === Number(form.values.product_id))
+                  .map(({ id, voucher_code, voucher_name }) => ({ label: `${voucher_code}: ${voucher_name}`, value: String(id) }))}
                 {...form.getInputProps('voucher_type_id')}
               />
             </Grid.Col>

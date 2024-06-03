@@ -27,36 +27,6 @@ import type { Product } from '@/pages/products.tsx'
 import AppClientTable from '@/components/AppClientTable.tsx'
 import type { VoucherType } from '@/pages/vouchers/types.tsx'
 
-export interface ErrorSchema {
-  message: string
-  return_code: string
-  errors: {
-    batch_id: Array<string>
-    batch_count: Array<string>
-    product_id: Array<string>
-    file: Array<string>
-    rows: {
-      [row: string]: {
-        serial: Array<string>
-        PUK: Array<string>
-      }
-    }
-  }
-  duplicated_rows: [
-    {
-      serial: number
-      rows: number[]
-    } | {
-      PUK: number
-      rows: number[]
-    },
-  ]
-  csv: {
-    serial: Array<string>
-    PUK: Array<string>
-  }
-}
-
 export interface FieldError {
   error_code: string
   error_message: string
@@ -84,7 +54,7 @@ export interface BatchUploadErrorSchema {
 const schema = object().shape({
   batch_id: string().required().label('Batch ID'),
   product_id: number().required(),
-  voucher_type_id: number().required(),
+  // voucher_type_id: number().required(),
   batch_count: number().required().min(1),
   file: mixed().test(
     'required',
@@ -99,7 +69,7 @@ export default function BatchUploadVouchers() {
     initialValues: {
       batch_id: '',
       product_id: 0,
-      voucher_type_id: 0,
+      // voucher_type_id: 0,
       batch_count: 0,
       file: undefined,
     },
@@ -149,7 +119,7 @@ export default function BatchUploadVouchers() {
       formData.append('batch_id', String(values.batch_id))
       formData.append('batch_count', String(values.batch_count))
       formData.append('product_id', String(values.product_id))
-      formData.append('voucher_type_id', String(values.voucher_type_id))
+      // formData.append('voucher_type_id', String(values.voucher_type_id))
       formData.append('file', values.file as File)
       return (await api.post('batchOrder', { body: formData }).json<{
         vouchers: [{ serial: string, PUK: string }]
@@ -218,16 +188,16 @@ export default function BatchUploadVouchers() {
               <Input.Label required>Batch ID</Input.Label>
               <TextInput aria-label="Batch ID" required {...form.getInputProps('batch_id')} />
             </div>
-            <div className="grid md:grid-cols-2 md:items-baseline">
-              <Input.Label required>Product reference</Input.Label>
-              <Select
-                aria-label="Product reference"
-                searchable
-                clearable
-                data={products?.map(({ id, supplier, product_name }) => ({ label: `${supplier}: ${product_name}`, value: String(id) }))}
-                {...form.getInputProps('product_id')}
-              />
-            </div>
+            {/* <div className="grid md:grid-cols-2 md:items-baseline"> */}
+            {/*  <Input.Label required>Product reference</Input.Label> */}
+            {/*  <Select */}
+            {/*    aria-label="Product reference" */}
+            {/*    searchable */}
+            {/*    clearable */}
+            {/*    data={products?.map(({ id, supplier, product_name }) => ({ label: `${supplier}: ${product_name}`, value: String(id) }))} */}
+            {/*    {...form.getInputProps('product_id')} */}
+            {/*  /> */}
+            {/* </div> */}
             <div className="grid md:grid-cols-2 md:items-baseline">
               <Input.Label required>Voucher type</Input.Label>
               <Select
