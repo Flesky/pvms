@@ -188,24 +188,14 @@ export default function BatchUploadVouchers() {
               <Input.Label required>Batch ID</Input.Label>
               <TextInput aria-label="Batch ID" required {...form.getInputProps('batch_id')} />
             </div>
-            {/* <div className="grid md:grid-cols-2 md:items-baseline"> */}
-            {/*  <Input.Label required>Product reference</Input.Label> */}
-            {/*  <Select */}
-            {/*    aria-label="Product reference" */}
-            {/*    searchable */}
-            {/*    clearable */}
-            {/*    data={products?.map(({ id, supplier, product_name }) => ({ label: `${supplier}: ${product_name}`, value: String(id) }))} */}
-            {/*    {...form.getInputProps('product_id')} */}
-            {/*  /> */}
-            {/* </div> */}
             <div className="grid md:grid-cols-2 md:items-baseline">
-              <Input.Label required>Voucher type</Input.Label>
+              <Input.Label required>Product reference</Input.Label>
               <Select
-                aria-label="Voucher type"
+                aria-label="Product reference"
                 searchable
                 clearable
-                data={voucherTypes?.map(({ id, voucher_code, voucher_name }) => ({ label: `${voucher_code}: ${voucher_name}`, value: String(id) }))}
-                {...form.getInputProps('voucher_type_id')}
+                data={products?.map(({ id, supplier, product_name }) => ({ label: `${supplier}: ${product_name}`, value: String(id) }))}
+                {...form.getInputProps('product_id')}
               />
             </div>
             <div className="grid md:grid-cols-2 md:items-baseline">
