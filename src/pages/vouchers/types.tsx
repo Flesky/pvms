@@ -1,10 +1,11 @@
 import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Group, Modal, Select, TextInput } from '@mantine/core'
+import { Alert, Badge, Button, Checkbox, Group, Modal, Select, TextInput } from '@mantine/core'
 import { IconAlertCircle, IconPlus } from '@tabler/icons-react'
 import { type InferType, number, object, string } from 'yup'
 import { useForm, yupResolver } from '@mantine/form'
 import { notifications } from '@mantine/notifications'
 import type { HTTPError } from 'ky'
+import * as yup from 'yup'
 import api, { transformErrors } from '@/utils/api.ts'
 import type { GetAllResponse, GetResponse, Result } from '@/types'
 import AppHeader from '@/components/AppHeader.tsx'
@@ -18,13 +19,14 @@ export interface VoucherType extends Result {
   product_id: number
   voucher_code: string
   voucher_name: string
-  status: number
+  status: 0 | 1
 }
 
 const schema = object({
   product_id: number().required().label('Product ID'),
   voucher_code: string().trim().required().label('Voucher code'),
   voucher_name: string().trim().required().label('Voucher name'),
+  status: yup.boolean(),
 })
 
 export default function VoucherTypes() {
@@ -36,9 +38,14 @@ export default function VoucherTypes() {
       product_id: 0,
       voucher_code: '',
       voucher_name: '',
+      status: true,
     },
     validate: yupResolver(schema),
     validateInputOnBlur: true,
+    transformValues: values => ({
+      ...values,
+      status: Number(values.status),
+    }),
   })
 
   const { data, isPending } = useQueries({
@@ -93,12 +100,15 @@ export default function VoucherTypes() {
             required
             clearable
             {...form.getInputProps('product_id')}
-            data={data?.products?.map(({ id, product_name }) => ({
+            data={data?.products?.filter(
+              ({ status }) => status,
+            ).map(({ id, product_name }) => ({
               label: product_name,
               value: String(id),
             }))}
           />
           <TextInput mt="sm" required label="Voucher name" {...form.getInputProps('voucher_name')} />
+          <Checkbox mt="sm" disabled={!id} label="Enable product" {...form.getInputProps('status', { type: 'checkbox' })}></Checkbox>
           {error && (
             <Alert mt="md" title="Form validation failed" color="red" icon={<IconAlertCircle />}>
               Please check the form for errors and try again.
@@ -133,7 +143,7 @@ export default function VoucherTypes() {
           {
             accessorKey: 'status',
             header: 'Status',
-            cell: ({ row }) => (row.original.status === 1 ? 'Active' : 'Inactive'),
+            cell: ({ cell }) => cell.getValue() ? <Badge>Active</Badge> : <Badge color="gray">Inactive</Badge>,
           },
           {
             accessorKey: 'actions',
@@ -144,7 +154,7 @@ export default function VoucherTypes() {
                   variant="default"
                   onClick={() => {
                     saveReset()
-                    form.setValues({ ...replaceNullWithEmptyString(row.original), product_id: String(row.original.product_id) })
+                    form.setValues({ ...replaceNullWithEmptyString(row.original), product_id: String(row.original.product_id), status: !!row.original.status })
                     open(`Edit ${row.original.voucher_name}`, row.original.voucher_code)
                   }}
                 >

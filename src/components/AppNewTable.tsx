@@ -116,8 +116,6 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-
-    debugTable: true,
   })
 
   const [highlightedColumn, setHighlightedColumn] = useState<string>()

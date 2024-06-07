@@ -92,7 +92,7 @@ export default function BatchUploadVouchers() {
   //   queryFn: async () => (await api.get('product').json<GetAllResponse<Product>>()).results,
   // })
 
-  const { products, voucherTypes } = useQueries({
+  const { products } = useQueries({
     queries: [
       {
         queryKey: ['product'],
@@ -194,7 +194,7 @@ export default function BatchUploadVouchers() {
                 aria-label="Product reference"
                 searchable
                 clearable
-                data={products?.map(({ id, supplier, product_name }) => ({ label: `${supplier}: ${product_name}`, value: String(id) }))}
+                data={products?.filter(({ status }) => status).map(({ id, supplier, product_name }) => ({ label: `${supplier}: ${product_name}`, value: String(id) }))}
                 {...form.getInputProps('product_id')}
               />
             </div>

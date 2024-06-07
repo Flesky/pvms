@@ -1,11 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Group, Modal, TextInput } from '@mantine/core'
-import * as yup from 'yup'
+import { Alert, Badge, Button, Checkbox, Group, Modal, TextInput } from '@mantine/core'
 import { useForm, yupResolver } from '@mantine/form'
 import { notifications } from '@mantine/notifications'
 import { IconAlertCircle, IconPlus } from '@tabler/icons-react'
 import type { HTTPError } from 'ky'
 import type { InferType } from 'yup'
+import * as yup from 'yup'
 import api, { transformErrors } from '../utils/api.ts'
 import AppHeader from '../components/AppHeader.tsx'
 import useModal from '../hooks/useModal.ts'
@@ -23,6 +23,7 @@ const schema = yup.object().shape({
   product_code: yup.string().trim().required().label('Product code'),
   product_name: yup.string().trim().required().label('Product name'),
   supplier: yup.string().trim().required().label('Supplier'),
+  status: yup.boolean(),
 })
 
 export default function Products() {
@@ -34,14 +35,14 @@ export default function Products() {
       product_code: '',
       product_name: '',
       supplier: '',
-    },
-    transformValues: (values) => {
-      return {
-        ...values,
-      }
+      status: true,
     },
     validate: yupResolver(schema),
     validateInputOnBlur: true,
+    transformValues: values => ({
+      ...values,
+      status: Number(values.status),
+    }),
   })
 
   const { data: records, isPending } = useQuery({
@@ -85,7 +86,7 @@ export default function Products() {
           <TextInput disabled={!!id} required label="Product code" {...form.getInputProps('product_code')} />
           <TextInput required mt="sm" label="Product name" {...form.getInputProps('product_name')} />
           <TextInput required mt="sm" label="Supplier" {...form.getInputProps('supplier')} />
-
+          <Checkbox mt="sm" disabled={!id} label="Enable product" {...form.getInputProps('status', { type: 'checkbox' })}></Checkbox>
           {error && (
             <Alert mt="md" title="Form validation failed" color="red" icon={<IconAlertCircle />}>
               Please check the form for errors and try again.
@@ -129,7 +130,7 @@ export default function Products() {
           {
             accessorKey: 'status',
             header: 'Status',
-            cell: ({ cell }) => cell.getValue() ? 'Active' : 'Inactive',
+            cell: ({ cell }) => cell.getValue() ? <Badge>Active</Badge> : <Badge color="gray">Inactive</Badge>,
           },
           {
             accessorKey: 'created_at',
@@ -162,7 +163,7 @@ export default function Products() {
                   loading={saveIsPending && saveVariables?.values.product_code === row.original.product_code}
                   disabled={saveIsPending && !!saveVariables}
                   onClick={() => {
-                    form.setValues(row.original)
+                    form.setValues({ ...row.original, status: !!row.original.status })
                     saveReset()
                     open(`Edit ${row.original.product_code}`, row.original.product_code)
                   }}
