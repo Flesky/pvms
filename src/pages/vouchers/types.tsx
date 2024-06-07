@@ -1,5 +1,5 @@
 import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query'
-import { Alert, Badge, Button, Checkbox, Group, Modal, Select, TextInput } from '@mantine/core'
+import { Alert, Badge, Button, Checkbox, Group, Modal, Select, Text, TextInput } from '@mantine/core'
 import { IconAlertCircle, IconPlus } from '@tabler/icons-react'
 import { type InferType, number, object, string } from 'yup'
 import { useForm, yupResolver } from '@mantine/form'
@@ -108,7 +108,8 @@ export default function VoucherTypes() {
             }))}
           />
           <TextInput mt="sm" required label="Voucher name" {...form.getInputProps('voucher_name')} />
-          <Checkbox mt="sm" disabled={!id} label="Enable product" {...form.getInputProps('status', { type: 'checkbox' })}></Checkbox>
+          <Text size="sm" mt="sm">Status</Text>
+          <Checkbox mt="sm" disabled={!id} label="Enable voucher type" {...form.getInputProps('status', { type: 'checkbox' })}></Checkbox>
           {error && (
             <Alert mt="md" title="Form validation failed" color="red" icon={<IconAlertCircle />}>
               Please check the form for errors and try again.

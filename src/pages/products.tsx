@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Alert, Badge, Button, Checkbox, Group, Modal, TextInput } from '@mantine/core'
+import { Alert, Badge, Button, Checkbox, Group, Modal, Text, TextInput } from '@mantine/core'
 import { useForm, yupResolver } from '@mantine/form'
 import { notifications } from '@mantine/notifications'
 import { IconAlertCircle, IconPlus } from '@tabler/icons-react'
@@ -86,6 +86,7 @@ export default function Products() {
           <TextInput disabled={!!id} required label="Product code" {...form.getInputProps('product_code')} />
           <TextInput required mt="sm" label="Product name" {...form.getInputProps('product_name')} />
           <TextInput required mt="sm" label="Supplier" {...form.getInputProps('supplier')} />
+          <Text size="sm" mt="sm">Status</Text>
           <Checkbox mt="sm" disabled={!id} label="Enable product" {...form.getInputProps('status', { type: 'checkbox' })}></Checkbox>
           {error && (
             <Alert mt="md" title="Form validation failed" color="red" icon={<IconAlertCircle />}>
