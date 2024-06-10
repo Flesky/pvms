@@ -15,7 +15,7 @@ import '@mantine/charts/styles.css'
 import '@mantine/dates/styles.css'
 import 'mantine-datatable/styles.css'
 import './index.css'
-import { config } from './utils/oidc.ts'
+import { config } from './utils/auth.ts'
 
 const queryClient = new QueryClient()
 

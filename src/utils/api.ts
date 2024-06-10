@@ -1,5 +1,5 @@
 import ky from 'ky'
-import { getUser } from './oidc.ts'
+import { getUser } from './auth.ts'
 
 export interface Error {
   error_field: string

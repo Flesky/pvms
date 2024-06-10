@@ -25,5 +25,6 @@ function getUser() {
 }
 
 const changePasswordUrl = `${import.meta.env.VITE_AUTHORITY_URL}/protocol/openid-connect/auth?client_id=${import.meta.env.VITE_CLIENT_ID}&redirect_uri=${import.meta.env.VITE_BASE_URL}&response_type=code&scope=openid&kc_action=UPDATE_PASSWORD`
+const introspectUrl = `${import.meta.env.VITE_AUTHORITY_URL}/protocol/openid-connect/token/introspect`
 
-export { config, getUser, changePasswordUrl }
+export { config, getUser, changePasswordUrl, introspectUrl }

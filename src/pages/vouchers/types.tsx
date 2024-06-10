@@ -13,6 +13,7 @@ import useModal from '@/hooks/useModal.ts'
 import type { Product } from '@/pages/products.tsx'
 import { replaceNullWithEmptyString } from '@/utils/functions.ts'
 import AppNewTable from '@/components/AppNewTable.tsx'
+import { Can } from '@/components/Can.ts'
 
 export interface VoucherType extends Result {
   id: number
@@ -122,16 +123,18 @@ export default function VoucherTypes() {
       </Modal>
 
       <AppHeader title="Voucher Types">
-        <Button
-          leftSection={<IconPlus size={16} />}
-          onClick={() => {
-            form.reset()
-            saveReset()
-            open('Add voucher type')
-          }}
-        >
-          Add voucher type
-        </Button>
+        <Can I="create" a="Batch Order">
+          <Button
+            leftSection={<IconPlus size={16} />}
+            onClick={() => {
+              form.reset()
+              saveReset()
+              open('Add voucher type')
+            }}
+          >
+            Add voucher type
+          </Button>
+        </Can>
       </AppHeader>
 
       <AppNewTable

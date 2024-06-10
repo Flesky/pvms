@@ -1,6 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom'
 import type { TablerIconsProps } from '@tabler/icons-react'
-import { IconBox, IconHistory, IconSettings, IconTicket } from '@tabler/icons-react'
+import { IconBox, IconHistory, IconList, IconSettings, IconTicket } from '@tabler/icons-react'
 
 import DefaultLayout from '../app.tsx'
 
@@ -13,22 +13,26 @@ import ErrorCodes from '@/pages/config/error-codes.tsx'
 import AuditLog from '@/pages/audit-log'
 import Test from '@/pages/test.tsx'
 import VoucherTypes from '@/pages/vouchers/types.tsx'
+import type { Subjects } from '@/utils/ability.ts'
 
 interface NavItem {
   to: string
   label: string
   icon: (props: TablerIconsProps) => JSX.Element
+  subject?: Subjects
 }
 
 interface NavParent {
   label: string
   icon: (props: TablerIconsProps) => JSX.Element
   children?: NavChild[]
+  subject?: Subjects
 }
 
 interface NavChild {
   to: string
   label: string
+  subject?: Subjects
 }
 
 type NavLinks = (NavItem | NavParent)[]
@@ -37,17 +41,27 @@ const navLinks: NavLinks = [
   // { to: '/', label: 'Home', icon: IconHome },
   { to: '/', label: 'Products', icon: IconBox },
   // { to: '/vouchers', label: 'Vouchers', icon: IconTicket },
-  { label: 'Vouchers', icon: IconTicket, children: [
-    { to: '/vouchers/types', label: 'Types' },
-    { to: '/vouchers', label: 'View vouchers' },
-    { to: '/vouchers/batch-orders', label: 'Batch orders' },
-    { to: '/vouchers/batch-upload', label: 'Batch upload' },
+  { label: 'Vouchers', icon: IconTicket, subject: 'Vouchers', children: [
+    { to: '/vouchers/types', label: 'Types', subject: 'Vouchers' },
+    { to: '/vouchers', label: 'View vouchers', subject: 'Vouchers' },
   ] },
+
+  {
+    label: 'Batch Order',
+    icon: IconList,
+    subject: 'Batch Order',
+    children: [
+
+      { to: '/vouchers/batch-orders', label: 'View batch orders', subject: 'Batch Order' },
+      { to: '/vouchers/batch-upload', label: 'Batch upload', subject: 'Batch Order' },
+    ],
+  },
 
   {
     label: 'History',
     icon: IconHistory,
     to: '/audit-log',
+    subject: 'Management',
   },
 
   // {
