@@ -51,7 +51,6 @@ const navLinks: NavLinks = [
     icon: IconList,
     subject: 'Batch Order',
     children: [
-
       { to: '/vouchers/batch-orders', label: 'View batch orders', subject: 'Batch Order' },
       { to: '/vouchers/batch-upload', label: 'Batch upload', subject: 'Batch Order' },
     ],
