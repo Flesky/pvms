@@ -6,11 +6,13 @@ import { IconAlertCircle, IconPlus } from '@tabler/icons-react'
 import type { HTTPError } from 'ky'
 import type { InferType } from 'yup'
 import * as yup from 'yup'
+import { useContext } from 'react'
 import api, { transformErrors } from '../utils/api.ts'
 import AppHeader from '../components/AppHeader.tsx'
 import useModal from '../hooks/useModal.ts'
 import type { GetAllResponse, GetResponse, Result } from '@/types'
 import AppNewTable from '@/components/AppNewTable.tsx'
+import { AbilityContext, Can } from '@/components/Can.ts'
 
 export interface Product extends Result {
   product_code: string
@@ -28,6 +30,7 @@ const schema = yup.object().shape({
 
 export default function Products() {
   const { open, close, id, modalProps } = useModal<string>()
+  const ability = useContext(AbilityContext)
   const queryClient = useQueryClient()
 
   const form = useForm({
@@ -157,104 +160,28 @@ export default function Products() {
             header: 'Actions',
             cell: ({ row }) => (
               <Group gap={4} justify="right" wrap="nowrap">
-                <Button
-                  size="xs"
-                  variant="light"
-                  color="gray"
-                  loading={saveIsPending && saveVariables?.values.product_code === row.original.product_code}
-                  disabled={saveIsPending && !!saveVariables}
-                  onClick={() => {
-                    form.setValues({ ...row.original, status: !!row.original.status })
-                    saveReset()
-                    open(`Edit ${row.original.product_code}`, row.original.product_code)
-                  }}
-                >
-                  Edit
-                </Button>
-                {/* <Button */}
-                {/*  size="xs" */}
-                {/*  variant="light" */}
-                {/*  color="red" */}
-                {/*  loading={variables === row.original.product_code} */}
-                {/*  onClick={() => { */}
-                {/*    open('Delete product', row.original.product_code) */}
-                {/*  }} */}
-                {/* > */}
-                {/*  Delete */}
-                {/* </Button> */}
+                <Can I="update" a="Product">
+                  <Button
+                    size="xs"
+                    variant="light"
+                    color="gray"
+                    loading={saveIsPending && saveVariables?.values.product_code === row.original.product_code}
+                    disabled={saveIsPending && !!saveVariables}
+                    onClick={() => {
+                      form.setValues({ ...row.original, status: !!row.original.status })
+                      saveReset()
+                      open(`Edit ${row.original.product_code}`, row.original.product_code)
+                    }}
+                  >
+                    Edit
+                  </Button>
+                </Can>
               </Group>
             ),
           },
         ]}
       >
       </AppNewTable>
-
-      {/* <AppClientTable<Product> */}
-      {/*  id="products" */}
-      {/*  tableProps={{ */}
-      {/*    records, */}
-      {/*    fetching: isPending, */}
-      {/*    columns: [ */}
-      {/*      { accessor: 'product_code' }, */}
-      {/*      { accessor: 'product_name' }, */}
-      {/*      { accessor: 'supplier' }, */}
-      {/*      { accessor: 'created_at', render: ({ created_at }) => new Date(created_at).toLocaleString() }, */}
-      {/*      { accessor: 'created_by' }, */}
-      {/*      { accessor: 'updated_at', render: ({ created_at, updated_at }) => (created_at === updated_at) ? '' : new Date(updated_at).toLocaleString() }, */}
-      {/*      { accessor: 'updated_by' }, */}
-      {/*      { */}
-      {/*        accessor: 'actions', */}
-      {/*        title: 'Actions', */}
-      {/*        textAlign: 'right', */}
-      {/*        render: row => ( */}
-      {/*          <Group gap={4} justify="right" wrap="nowrap"> */}
-      {/*            <Button */}
-      {/*              size="xs" */}
-      {/*              variant="light" */}
-      {/*              color="gray" */}
-      {/*              loading={saveIsPending && saveVariables?.values.product_code === row.product_code} */}
-      {/*              disabled={saveIsPending && !!saveVariables} */}
-      {/*              onClick={() => { */}
-      {/*                form.setValues(row) */}
-      {/*                saveReset() */}
-      {/*                open(`Edit ${row.product_code}`, row.product_code) */}
-      {/*              }} */}
-      {/*            > */}
-      {/*              Edit */}
-      {/*            </Button> */}
-      {/*            <Button */}
-      {/*              size="xs" */}
-      {/*              variant="light" */}
-      {/*              color="red" */}
-      {/*              loading={variables === row.product_code} */}
-      {/*              onClick={() => modals.openConfirmModal({ */}
-      {/*                title: `Delete product`, */}
-      {/*                children: <Text size="sm"> */}
-      {/*                  Would you like to delete */}
-      {/*                  {' '} */}
-      {/*                  <Text component="span" fw={700}>{row.product_code}</Text> */}
-      {/*                  ? This action is permanent and irreversible. */}
-      {/*                  /!* eslint-disable-next-line style/jsx-closing-tag-location *!/ */}
-      {/*                </Text>, */}
-      {/*                labels: { */}
-      {/*                  cancel: 'Cancel', */}
-      {/*                  confirm: `Delete product`, */}
-      {/*                }, */}
-      {/*                confirmProps: { */}
-      {/*                  color: 'red', */}
-      {/*                }, */}
-      {/*                onConfirm: () => remove(row.product_code), */}
-      {/*              })} */}
-      {/*            > */}
-      {/*              Delete */}
-      {/*            </Button> */}
-      {/*          </Group> */}
-      {/*        ) */}
-      {/*        , */}
-      {/*      }, */}
-      {/*    ], */}
-      {/*  }} */}
-      {/* /> */}
     </>
   )
 }

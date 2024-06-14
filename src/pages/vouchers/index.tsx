@@ -55,27 +55,6 @@ export default function Vouchers() {
   const queryClient = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()
 
-  // const { data, isPending } = useQuery({
-  //   queryKey: ['voucher'],
-  //   queryFn: async () => {
-  //     const [vouchers, products, batchOrders] = await Promise.all([
-  //       api.get('getAllVouchers').json() as Promise<GetAllResponse<Voucher>>,
-  //       api.get('product').json() as Promise<GetAllResponse<Product>>,
-  //       api.get('batchOrder').json() as Promise<GetAllResponse<BatchOrder>>,
-  //     ])
-  //     // eslint-disable-next-line ts/no-use-before-define
-  //     saveReset()
-  //     // eslint-disable-next-line ts/no-use-before-define
-  //     toggleReset()
-  //
-  //     return {
-  //       vouchers: vouchers.results,
-  //       products: products.results,
-  //       batchOrders: batchOrders.results,
-  //     }
-  //   },
-  // })
-
   const { data, isPending } = useQueries({
     queries: [
       {

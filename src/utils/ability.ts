@@ -1,7 +1,8 @@
 import type { PureAbility } from '@casl/ability'
 import { AbilityBuilder, createAliasResolver, createMongoAbility } from '@casl/ability'
 
-type Roles = 'PVMS-management' | 'PVMS-upload' | 'PVMS-viewer'
+const ROLES = ['PVMS-management', 'PVMS-upload', 'PVMS-viewer']
+type Roles = typeof ROLES[number]
 
 /*
   * Actions are the CRUD operations
@@ -18,7 +19,7 @@ export type Actions = 'view' | 'create' | 'update' | 'delete' | 'modify' | 'mana
   * Subjects are the resources
   * all: all resources
  */
-export type Subjects = 'Vouchers' | 'Batch Order' | 'Management' | 'all'
+export type Subjects = 'Voucher' | 'Batch Order' | 'Management' | 'Product' | 'all' | 'any'
 
 type AppAbility = PureAbility<[Actions, Subjects]>
 
@@ -34,11 +35,15 @@ export default function defineAbilityFor(roles: Roles[]) {
 
   if (roles.includes('PVMS-upload')) {
     can('manage', 'Batch Order')
-    can('view', 'Vouchers')
+    can('view', 'Voucher')
+    can('view', 'Product')
   }
 
   if (roles.includes('PVMS-viewer'))
     can('view', 'all')
+
+  if (roles.some(role => ROLES.includes(role)))
+    can('view', 'any')
 
   return build({
     resolveAction,

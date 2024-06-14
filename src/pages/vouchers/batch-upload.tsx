@@ -194,7 +194,7 @@ export default function BatchUploadVouchers() {
                 aria-label="Product reference"
                 searchable
                 clearable
-                data={products?.filter(({ status }) => status).map(({ id, supplier, product_name }) => ({ label: `${supplier}: ${product_name}`, value: String(id) }))}
+                data={products?.map(({ id, supplier, product_name, status }) => ({ label: `${supplier}: ${product_name}`, value: String(id), disabled: !status }))}
                 {...form.getInputProps('product_id')}
               />
             </div>

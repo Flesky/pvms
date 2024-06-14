@@ -41,9 +41,9 @@ const navLinks: NavLinks = [
   // { to: '/', label: 'Home', icon: IconHome },
   { to: '/', label: 'Products', icon: IconBox },
   // { to: '/vouchers', label: 'Vouchers', icon: IconTicket },
-  { label: 'Vouchers', icon: IconTicket, subject: 'Vouchers', children: [
-    { to: '/vouchers/types', label: 'Types', subject: 'Vouchers' },
-    { to: '/vouchers', label: 'View vouchers', subject: 'Vouchers' },
+  { label: 'Vouchers', icon: IconTicket, subject: 'Voucher', children: [
+    { to: '/vouchers/types', label: 'Types', subject: 'Voucher' },
+    { to: '/vouchers', label: 'View vouchers', subject: 'Voucher' },
   ] },
 
   {

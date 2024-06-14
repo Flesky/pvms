@@ -101,11 +101,10 @@ export default function VoucherTypes() {
             required
             clearable
             {...form.getInputProps('product_id')}
-            data={data?.products?.filter(
-              ({ status }) => status,
-            ).map(({ id, product_name }) => ({
+            data={data?.products?.map(({ id, product_name, status }) => ({
               label: product_name,
               value: String(id),
+              disabled: !status,
             }))}
           />
           <TextInput mt="sm" required label="Voucher name" {...form.getInputProps('voucher_name')} />
