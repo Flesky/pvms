@@ -19,6 +19,7 @@ import { replaceNullWithEmptyString } from '@/utils/functions.ts'
 import type { BatchOrder } from '@/pages/vouchers/batch-order.tsx'
 import { router } from '@/utils/router.tsx'
 import type { VoucherType } from '@/pages/vouchers/types.tsx'
+import { Can } from '@/components/Can.ts'
 
 export interface Voucher extends Result {
   serial: string
@@ -293,36 +294,38 @@ export default function Vouchers() {
               textAlign: 'right',
               render: row => (
                 <Group gap={4} justify="right" wrap="nowrap">
-                  <Button
-                    size="xs"
-                    variant="light"
-                    color="gray"
-                    loading={saveIsPending && saveVariables?.values.serial === row.serial}
-                    disabled={saveIsPending && !!saveVariables}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      saveReset()
-                      form.setValues({ ...replaceNullWithEmptyString(row), product_id: String(row.product_id), voucher_type_id: String(row.voucher_type_id), expire_date: row.expire_date ? new Date(`${row.expire_date}T00:00:00`) as unknown as string : '' })
-                      open(`Edit ${row.serial}`, row.serial)
-                    }}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    size="xs"
-                    variant="light"
-                    loading={toggleVariables?.serial === row.serial}
-                    disabled={!!toggleVariables}
-                    color={row.available ? 'red' : 'green'}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      toggleMutate(row)
-                    }}
-                  >
-                    <span className="w-16">
-                      {row.available ? 'Deactivate' : 'Activate'}
-                    </span>
-                  </Button>
+                  <Can I="update" a="Voucher">
+                    <Button
+                      size="xs"
+                      variant="light"
+                      color="gray"
+                      loading={saveIsPending && saveVariables?.values.serial === row.serial}
+                      disabled={saveIsPending && !!saveVariables}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        saveReset()
+                        form.setValues({ ...replaceNullWithEmptyString(row), product_id: String(row.product_id), voucher_type_id: String(row.voucher_type_id), expire_date: row.expire_date ? new Date(`${row.expire_date}T00:00:00`) as unknown as string : '' })
+                        open(`Edit ${row.serial}`, row.serial)
+                      }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      size="xs"
+                      variant="light"
+                      loading={toggleVariables?.serial === row.serial}
+                      disabled={!!toggleVariables}
+                      color={row.available ? 'red' : 'green'}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        toggleMutate(row)
+                      }}
+                    >
+                      <span className="w-16">
+                        {row.available ? 'Deactivate' : 'Activate'}
+                      </span>
+                    </Button>
+                  </Can>
                 </Group>
               )
               ,

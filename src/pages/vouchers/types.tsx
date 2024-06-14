@@ -153,16 +153,18 @@ export default function VoucherTypes() {
             header: 'Actions',
             cell: ({ row }) => (
               <>
-                <Button
-                  variant="default"
-                  onClick={() => {
-                    saveReset()
-                    form.setValues({ ...replaceNullWithEmptyString(row.original), product_id: String(row.original.product_id), status: !!row.original.status })
-                    open(`Edit ${row.original.voucher_name}`, row.original.voucher_code)
-                  }}
-                >
-                  Edit
-                </Button>
+                <Can I="update" a="Voucher">
+                  <Button
+                    variant="default"
+                    onClick={() => {
+                      saveReset()
+                      form.setValues({ ...replaceNullWithEmptyString(row.original), product_id: String(row.original.product_id), status: !!row.original.status })
+                      open(`Edit ${row.original.voucher_name}`, row.original.voucher_code)
+                    }}
+                  >
+                    Edit
+                  </Button>
+                </Can>
               </>
             ),
           },
