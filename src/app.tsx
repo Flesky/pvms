@@ -107,7 +107,7 @@ function Layout() {
                                 defaultOpened={!!item.children?.some(child => matchPath(pathname, child.to))}
                               >
                                 {item.children?.map(child => (
-                                  <Can I={item.action || 'view'} a={child.subject || 'all'} key={item.label}>
+                                  <Can I={child.action || 'view'} a={child.subject || 'all'} key={child.label}>
                                     <NavLink
                                       classNames={{
                                         root: 'px-3 py-2.5 group rounded',
