@@ -72,7 +72,7 @@ function Layout() {
                       {navLinks.map((item) => {
                         if ('to' in item) {
                           return (
-                            <Can I="view" a={item.subject || 'all'} key={item.label}>
+                            <Can I={item.action || 'view'} a={item.subject || 'all'} key={item.label}>
                               <NavLink
                                 classNames={{
                                   root: 'px-3 py-2.5 group rounded',
@@ -94,7 +94,7 @@ function Layout() {
                         }
                         else {
                           return (
-                            <Can I="view" a={item.subject || 'all'} key={item.label}>
+                            <Can I={item.action || 'view'} a={item.subject || 'all'} key={item.label}>
                               <NavLink
                                 classNames={{
                                   root: 'px-3 py-2.5 group rounded',
@@ -107,7 +107,7 @@ function Layout() {
                                 defaultOpened={!!item.children?.some(child => matchPath(pathname, child.to))}
                               >
                                 {item.children?.map(child => (
-                                  <Can I="view" a={child.subject || 'all'} key={item.label}>
+                                  <Can I={item.action || 'view'} a={child.subject || 'all'} key={item.label}>
                                     <NavLink
                                       classNames={{
                                         root: 'px-3 py-2.5 group rounded',

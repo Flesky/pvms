@@ -13,13 +13,14 @@ import ErrorCodes from '@/pages/config/error-codes.tsx'
 import AuditLog from '@/pages/audit-log'
 import Test from '@/pages/test.tsx'
 import VoucherTypes from '@/pages/vouchers/types.tsx'
-import type { Subjects } from '@/utils/ability.ts'
+import type { Actions, Subjects } from '@/utils/ability.ts'
 
 interface NavItem {
   to: string
   label: string
   icon: (props: TablerIconsProps) => JSX.Element
   subject?: Subjects
+  action?: Actions
 }
 
 interface NavParent {
@@ -27,19 +28,21 @@ interface NavParent {
   icon: (props: TablerIconsProps) => JSX.Element
   children?: NavChild[]
   subject?: Subjects
+  action?: Actions
 }
 
 interface NavChild {
   to: string
   label: string
   subject?: Subjects
+  action?: Actions
 }
 
 type NavLinks = (NavItem | NavParent)[]
 
 const navLinks: NavLinks = [
   // { to: '/', label: 'Home', icon: IconHome },
-  { to: '/', label: 'Products', icon: IconBox },
+  { to: '/', label: 'Products', icon: IconBox, subject: 'Product' },
   // { to: '/vouchers', label: 'Vouchers', icon: IconTicket },
   { label: 'Vouchers', icon: IconTicket, subject: 'Voucher', children: [
     { to: '/vouchers/types', label: 'Types', subject: 'Voucher' },
@@ -52,7 +55,7 @@ const navLinks: NavLinks = [
     subject: 'Batch Order',
     children: [
       { to: '/vouchers/batch-orders', label: 'View batch orders', subject: 'Batch Order' },
-      { to: '/vouchers/batch-upload', label: 'Batch upload', subject: 'Batch Order' },
+      { to: '/vouchers/batch-upload', label: 'Batch upload', subject: 'Batch Order', action: 'create' },
     ],
   },
 
@@ -69,7 +72,7 @@ const navLinks: NavLinks = [
   //   to: '/test',
   // },
 
-  { label: 'Configuration', icon: IconSettings, children: [
+  { label: 'Configuration', icon: IconSettings, subject: 'Management', children: [
     { to: '/settings/error-codes', label: 'Error message overrides' },
   ] },
   // { to: '/vouchers/add', label: 'Add VouchersDeprecated', icon: IconTicket },

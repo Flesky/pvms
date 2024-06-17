@@ -19,7 +19,7 @@ export type Actions = 'view' | 'create' | 'update' | 'delete' | 'modify' | 'mana
   * Subjects are the resources
   * all: all resources
  */
-export type Subjects = 'Voucher' | 'Batch Order' | 'Management' | 'Product' | 'all' | 'any'
+export type Subjects = 'Voucher' | 'Batch Order' | 'Product' | 'Management' | 'all' | 'any'
 
 type AppAbility = PureAbility<[Actions, Subjects]>
 
@@ -39,8 +39,11 @@ export default function defineAbilityFor(roles: Roles[]) {
     can('view', 'Product')
   }
 
-  if (roles.includes('PVMS-viewer'))
-    can('view', 'all')
+  if (roles.includes('PVMS-viewer')) {
+    can('view', 'Batch Order')
+    can('view', 'Voucher')
+    can('view', 'Product')
+  }
 
   if (roles.some(role => ROLES.includes(role)))
     can('view', 'any')
