@@ -204,7 +204,6 @@ export default function AppNewTable<T extends RowData>(props: Props<T>) {
       </Modal>
 
       <Stack
-        p="lg"
         // bg="#f9f9f9"
         h="100%"
         pos="relative"

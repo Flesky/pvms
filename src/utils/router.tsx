@@ -1,10 +1,10 @@
 import { createBrowserRouter } from 'react-router-dom'
 import type { TablerIconsProps } from '@tabler/icons-react'
-import { IconBox, IconHistory, IconList, IconSettings, IconTicket } from '@tabler/icons-react'
+import { IconBox, IconHistory, IconLayoutDashboard, IconList, IconSettings, IconTicket } from '@tabler/icons-react'
 
 import DefaultLayout from '../app.tsx'
 
-// import Index from '../pages'
+// import Dashboard from '../pages'
 import Products from '../pages/products.tsx'
 import BatchUpload from '@/pages/vouchers/batch-upload.tsx'
 import Vouchers from '@/pages/vouchers'
@@ -14,6 +14,7 @@ import AuditLog from '@/pages/audit-log'
 import Test from '@/pages/test.tsx'
 import VoucherTypes from '@/pages/vouchers/types.tsx'
 import type { Actions, Subjects } from '@/utils/ability.ts'
+import Dashboard from '@/pages/dashboard.tsx'
 
 interface NavItem {
   to: string
@@ -42,7 +43,8 @@ type NavLinks = (NavItem | NavParent)[]
 
 const navLinks: NavLinks = [
   // { to: '/', label: 'Home', icon: IconHome },
-  { to: '/', label: 'Products', icon: IconBox, subject: 'Product' },
+  { to: '/', label: 'Dashboard', icon: IconLayoutDashboard, subject: 'any' },
+  { to: '/products', label: 'Products', icon: IconBox, subject: 'Product' },
   // { to: '/vouchers', label: 'Vouchers', icon: IconTicket },
   { label: 'Vouchers', icon: IconTicket, subject: 'Voucher', children: [
     { to: '/vouchers/types', label: 'Types', subject: 'Voucher' },
@@ -81,8 +83,9 @@ const navLinks: NavLinks = [
 const router = createBrowserRouter([
   {
     children: [
-      // { path: '', element: <Index /> },
-      { path: '', element: <Products /> },
+      { path: '', element: <Dashboard /> },
+
+      { path: 'products', element: <Products /> },
 
       { path: 'vouchers', children: [
         { path: '', element: <Vouchers /> },
@@ -92,7 +95,7 @@ const router = createBrowserRouter([
       ] },
 
       {
-        path: '/audit-log',
+        path: 'audit-log',
         element: <AuditLog />,
       },
 

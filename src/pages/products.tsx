@@ -1,24 +1,25 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Alert, Badge, Button, Checkbox, Group, Modal, Text, TextInput } from '@mantine/core'
+import { Alert, Badge, Button, Checkbox, Group, Modal, NumberInput, Text, TextInput } from '@mantine/core'
 import { useForm, yupResolver } from '@mantine/form'
 import { notifications } from '@mantine/notifications'
 import { IconAlertCircle, IconPlus } from '@tabler/icons-react'
 import type { HTTPError } from 'ky'
 import type { InferType } from 'yup'
 import * as yup from 'yup'
-import { useContext } from 'react'
 import api, { transformErrors } from '../utils/api.ts'
 import AppHeader from '../components/AppHeader.tsx'
 import useModal from '../hooks/useModal.ts'
 import type { GetAllResponse, GetResponse, Result } from '@/types'
 import AppNewTable from '@/components/AppNewTable.tsx'
-import { AbilityContext, Can } from '@/components/Can.ts'
+import { Can } from '@/components/Can.ts'
 
 export interface Product extends Result {
   product_code: string
   product_name: string
   supplier: string
   status: 0 | 1
+  threshold_alert: number
+  available_voucher_count: number
 }
 
 const schema = yup.object().shape({
@@ -26,11 +27,11 @@ const schema = yup.object().shape({
   product_name: yup.string().trim().required().label('Product name'),
   supplier: yup.string().trim().required().label('Supplier'),
   status: yup.boolean(),
+  threshold_alert: yup.number().label('Threshold alert'),
 })
 
 export default function Products() {
   const { open, close, id, modalProps } = useModal<string>()
-  const ability = useContext(AbilityContext)
   const queryClient = useQueryClient()
 
   const form = useForm({
@@ -39,6 +40,7 @@ export default function Products() {
       product_name: '',
       supplier: '',
       status: true,
+      threshold_alert: 0,
     },
     validate: yupResolver(schema),
     validateInputOnBlur: true,
@@ -89,6 +91,7 @@ export default function Products() {
           <TextInput disabled={!!id} required label="Product code" {...form.getInputProps('product_code')} />
           <TextInput required mt="sm" label="Product name" {...form.getInputProps('product_name')} />
           <TextInput required mt="sm" label="Supplier" {...form.getInputProps('supplier')} />
+          <NumberInput required mt="sm" label="Threshold alert" description="Notify when the number of vouchers in inventory falls below this number" {...form.getInputProps('threshold_alert')} />
           <Text size="sm" mt="sm">Status</Text>
           <Checkbox mt="sm" disabled={!id} label="Enable product" {...form.getInputProps('status', { type: 'checkbox' })}></Checkbox>
           {error && (
@@ -135,6 +138,14 @@ export default function Products() {
             accessorKey: 'status',
             header: 'Status',
             cell: ({ cell }) => cell.getValue() ? <Badge>Active</Badge> : <Badge color="gray">Inactive</Badge>,
+          },
+          {
+            accessorKey: 'available_voucher_count',
+            header: 'Available',
+          },
+          {
+            accessorKey: 'threshold_alert',
+            header: 'Threshold Alert',
           },
           {
             accessorKey: 'created_at',

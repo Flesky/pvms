@@ -38,9 +38,10 @@ function Layout() {
   const { pathname } = useLocation()
 
   const { data: roles, isFetching } = useQuery({
-    queryKey: ['roles', auth.user?.access_token],
+    queryKey: ['roles', auth.user?.profile.email],
     queryFn: async () => (await api.get('tokeninspect').json()).introspect.resource_access[import.meta.env.VITE_CLIENT_ID].roles,
     initialData: [],
+    refetchOnWindowFocus: false,
   })
 
   return (
