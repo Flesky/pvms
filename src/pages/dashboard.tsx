@@ -1,6 +1,7 @@
-import { Badge, Button, Card, Group, Stack, Text, Title } from '@mantine/core'
+import { Badge, Button, Card, Group, Stack, Title } from '@mantine/core'
 import { useAuth } from 'react-oidc-context'
-import { useQueries, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query'
+import { notifications } from '@mantine/notifications'
 import AppHeader from '../components/AppHeader.tsx'
 import AppNewTable from '@/components/AppNewTable.tsx'
 import api from '@/utils/api.ts'
@@ -18,6 +19,16 @@ export default function Dashboard() {
     combine: queries => ({ alertNotification: queries[0] }),
   })
 
+  const { mutate: triggerEmailAlert, isPending: triggerEmailAlertPending } = useMutation({
+    mutationFn: async () => await api.get('triggerAlert'),
+    onSuccess: () => {
+      notifications.show({ message: `Successfully notified recepients.`, color: 'green' })
+    },
+    onError: () => {
+      notifications.show({ message: 'Failed to notify recepients.', color: 'red' })
+    },
+  })
+
   return (
     <>
       <AppHeader title="Dashboard" />
@@ -33,17 +44,18 @@ export default function Dashboard() {
             <Group justify="space-between" align="baseline" gap={0} mb="md">
               <Title order={2} size="h3">Low Stock Vouchers</Title>
               <Group>
-                {
-                  !alertNotification.isPending
-                  && (
-                    <Text size="sm" c="dimmed">
-                      Last updated:
-                      {' '}
-                      {new Date(alertNotification.dataUpdatedAt).toLocaleTimeString()}
-                    </Text>
-                  )
-                }
+                {/* { */}
+                {/*  !alertNotification.isPending */}
+                {/*  && ( */}
+                {/*    <Text size="sm" c="dimmed"> */}
+                {/*      Last updated: */}
+                {/*      {' '} */}
+                {/*      {new Date(alertNotification.dataUpdatedAt).toLocaleTimeString()} */}
+                {/*    </Text> */}
+                {/*  ) */}
+                {/* } */}
                 <Button loading={alertNotification.data && alertNotification.isFetching} onClick={() => queryClient.invalidateQueries({ queryKey: ['alertNotification'] })} variant="default">Refresh</Button>
+                <Button loading={triggerEmailAlertPending} onClick={() => triggerEmailAlert()}>Notify alert recepients</Button>
               </Group>
             </Group>
             <AppNewTable
