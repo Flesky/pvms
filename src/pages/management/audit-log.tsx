@@ -60,7 +60,7 @@ const schema: Record<string, DataTableColumn<Record<string, any>>[]> = {
 
 export default function AuditLog() {
   const { data, isPending } = useQuery({
-    queryKey: ['audit-log'],
+    queryKey: ['history'],
     queryFn: async () => (await api.get('voucher-history').json()).results,
   })
 

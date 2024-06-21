@@ -6,16 +6,16 @@ import DefaultLayout from '../app.tsx'
 
 // import Dashboard from '../pages'
 import Products from '../pages/products.tsx'
+import AuditLog from '../pages/management/audit-log.tsx'
 import BatchUpload from '@/pages/vouchers/batch-upload.tsx'
 import Vouchers from '@/pages/vouchers'
 import BatchOrders from '@/pages/vouchers/batch-order.tsx'
 import ErrorCodes from '@/pages/config/error-codes.tsx'
-import AuditLog from '@/pages/audit-log'
 import Test from '@/pages/test.tsx'
 import VoucherTypes from '@/pages/vouchers/types.tsx'
 import type { Actions, Subjects } from '@/utils/ability.ts'
 import Dashboard from '@/pages/dashboard.tsx'
-import AlertRecepients from '@/pages/config/alert-recepients.tsx'
+import AlertRecipients from '@/pages/config/alert-recipients.tsx'
 
 interface NavItem {
   to: string
@@ -63,10 +63,12 @@ const navLinks: NavLinks = [
   },
 
   {
-    label: 'History',
+    label: 'Management',
     icon: IconHistory,
-    to: '/audit-log',
     subject: 'Management',
+    children: [
+      { to: '/management/audit-log', label: 'Audit log', subject: 'Management' },
+    ],
   },
 
   // {
@@ -97,8 +99,11 @@ const router = createBrowserRouter([
       ] },
 
       {
-        path: 'audit-log',
-        element: <AuditLog />,
+        path: 'management',
+        children: [
+          { path: 'audit-log', element: <AuditLog /> },
+          { path: 'email-log', element: <AuditLog /> },
+        ],
       },
 
       { path: 'settings', children: [
@@ -108,7 +113,7 @@ const router = createBrowserRouter([
         },
         {
           path: 'email-recepients',
-          element: <AlertRecepients />,
+          element: <AlertRecipients />,
         },
       ] },
       { path: 'test', element: <Test /> },

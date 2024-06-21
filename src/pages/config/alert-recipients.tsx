@@ -13,7 +13,7 @@ import AppNewTable from '@/components/AppNewTable.tsx'
 import useModal from '@/hooks/useModal.ts'
 import { Can } from '@/components/Can.ts'
 
-interface EmailRecepient extends Result {
+interface EmailRecipient extends Result {
   name: string
   email: string
 }
@@ -23,10 +23,10 @@ const schema = yup.object().shape({
   email: yup.string().trim().email().required().label('Email'),
 })
 
-export default function AlertRecepients() {
+export default function AlertRecipients() {
   const { data, isPending } = useQuery({
     queryKey: ['alertEmailGroup'],
-    queryFn: async () => (await api.get('alertEmailGroup').json<GetAllResponse<EmailRecepient>>()).results,
+    queryFn: async () => (await api.get('alertEmailGroup').json<GetAllResponse<EmailRecipient>>()).results,
   })
   const { open, close, id, modalProps } = useModal<number>()
   const queryClient = useQueryClient()
@@ -43,29 +43,29 @@ export default function AlertRecepients() {
   const { mutate: save, isPending: saveIsPending, variables: saveVariables, reset: saveReset, error } = useMutation({
     mutationFn: async ({ values, id }: { values: InferType<typeof schema>, id?: number }) =>
       !id
-        ? await api.post('alertEmailGroup', { json: values }).json() as GetResponse<EmailRecepient>
-        : await api.put(`alertEmailGroup/${id}`, { json: values }).json() as GetResponse<EmailRecepient>,
-    onSuccess: (data: GetResponse<EmailRecepient>) => {
+        ? await api.post('alertEmailGroup', { json: values }).json() as GetResponse<EmailRecipient>
+        : await api.put(`alertEmailGroup/${id}`, { json: values }).json() as GetResponse<EmailRecipient>,
+    onSuccess: (data: GetResponse<EmailRecipient>) => {
       queryClient.invalidateQueries({ queryKey: ['alertEmailGroup'] })
-      notifications.show({ message: `Successfully saved recepient: ${data.results.name}`, color: 'green' })
+      notifications.show({ message: `Successfully saved recipient: ${data.results.name}`, color: 'green' })
       close()
     },
     onError: async (error: HTTPError) => {
       const errors = (await error.response?.json())?.errors
       if (errors)
         form.setErrors(transformErrors(errors))
-      notifications.show({ message: 'Failed to save recepient.', color: 'red' })
+      notifications.show({ message: 'Failed to save recipient.', color: 'red' })
     },
   })
 
   const { mutate: remove, variables: removeVariables } = useMutation({
-    mutationFn: async (id: number) => await api.delete(`alertEmailGroup/${id}`).json() as GetResponse<EmailRecepient>,
-    onSuccess: (data: GetResponse<EmailRecepient>) => {
+    mutationFn: async (id: number) => await api.delete(`alertEmailGroup/${id}`).json() as GetResponse<EmailRecipient>,
+    onSuccess: (data: GetResponse<EmailRecipient>) => {
       queryClient.invalidateQueries({ queryKey: ['alertEmailGroup'] })
-      notifications.show({ message: `Successfully deleted recepient: ${data.results.name}`, color: 'green' })
+      notifications.show({ message: `Successfully deleted recipient: ${data.results.name}`, color: 'green' })
       close()
     },
-    onError: () => notifications.show({ message: 'Failed to delete recepient.', color: 'red' }),
+    onError: () => notifications.show({ message: 'Failed to delete recipient.', color: 'red' }),
   })
 
   return (
@@ -85,16 +85,16 @@ export default function AlertRecepients() {
         </form>
       </Modal>
 
-      <AppHeader title="Email Recepients">
+      <AppHeader title="Email Recipients">
         <Button
           leftSection={<IconPlus size={16} />}
           onClick={() => {
             form.reset()
             saveReset()
-            open('Add recepient')
+            open('Add recipient')
           }}
         >
-          Add recepient
+          Add recipient
         </Button>
       </AppHeader>
       <AppNewTable
