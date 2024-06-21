@@ -16,6 +16,7 @@ import VoucherTypes from '@/pages/vouchers/types.tsx'
 import type { Actions, Subjects } from '@/utils/ability.ts'
 import Dashboard from '@/pages/dashboard.tsx'
 import AlertRecipients from '@/pages/config/alert-recipients.tsx'
+import EmailLog from '@/pages/management/email-log.tsx'
 
 interface NavItem {
   to: string
@@ -68,6 +69,7 @@ const navLinks: NavLinks = [
     subject: 'Management',
     children: [
       { to: '/management/audit-log', label: 'Audit log', subject: 'Management' },
+      { to: '/management/email-log', label: 'Email log', subject: 'Management' },
     ],
   },
 
@@ -102,7 +104,7 @@ const router = createBrowserRouter([
         path: 'management',
         children: [
           { path: 'audit-log', element: <AuditLog /> },
-          { path: 'email-log', element: <AuditLog /> },
+          { path: 'email-log', element: <EmailLog /> },
         ],
       },
 

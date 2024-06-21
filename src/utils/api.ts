@@ -24,7 +24,6 @@ export function transformErrors(errors: Error[]) {
 const api = ky.create({
   prefixUrl: import.meta.env.VITE_API_URL,
   retry: 0,
-  timeout: 30000,
   hooks: {
     beforeRequest: [
       (request) => {

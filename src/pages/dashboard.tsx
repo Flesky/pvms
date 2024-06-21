@@ -20,7 +20,9 @@ export default function Dashboard() {
   })
 
   const { mutate: triggerEmailAlert, isPending: triggerEmailAlertPending } = useMutation({
-    mutationFn: async () => await api.get('triggerAlert'),
+    mutationFn: async () => await api.get('triggerAlert', {
+      timeout: 60000,
+    }),
     onSuccess: () => {
       notifications.show({ message: `Successfully notified recepients.`, color: 'green' })
     },
