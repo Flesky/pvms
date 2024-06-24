@@ -13,6 +13,8 @@ export interface BatchOrder extends Result {
   product_id: number
   batch_count: number
   expiry_date: string
+  threshold_alert: number
+  available_voucher_count: number
   voucher: Voucher
 }
 
@@ -42,6 +44,14 @@ export default function BatchOrders() {
               title: 'Number of vouchers',
             },
             { accessor: 'expiry_date', title: 'Expiry date', render: ({ expiry_date }) => expiry_date ? new Date(expiry_date).toLocaleString() : 'No expiration date' },
+            {
+              accessor: 'threshold_alert',
+              title: 'Threshold alert',
+            },
+            {
+              accessor: 'available_voucher_count',
+              title: 'Available vouchers',
+            },
             {
               accessor: 'created_at',
               title: 'Created at',

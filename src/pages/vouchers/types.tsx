@@ -21,6 +21,8 @@ export interface VoucherType extends Result {
   voucher_code: string
   voucher_name: string
   status: 0 | 1
+  threshold_alert: number
+  available_voucher_count: number
 }
 
 const schema = object({
@@ -147,6 +149,14 @@ export default function VoucherTypes() {
             accessorKey: 'status',
             header: 'Status',
             cell: ({ cell }) => cell.getValue() ? <Badge>Active</Badge> : <Badge color="gray">Inactive</Badge>,
+          },
+          {
+            accessorKey: 'threshold_alert',
+            header: 'Threshold Alert',
+          },
+          {
+            accessorKey: 'available_voucher_count',
+            header: 'Available Vouchers',
           },
           {
             accessorKey: 'actions',
