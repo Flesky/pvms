@@ -12,6 +12,7 @@ export interface BatchOrder extends Result {
   batch_id: number
   product_id: number
   batch_count: number
+  expiry_date: string
   voucher: Voucher
 }
 
@@ -40,6 +41,7 @@ export default function BatchOrders() {
               accessor: 'batch_count',
               title: 'Number of vouchers',
             },
+            { accessor: 'expiry_date', title: 'Expiry date', render: ({ expiry_date }) => new Date(expiry_date).toLocaleString() },
             {
               accessor: 'created_at',
               title: 'Created at',

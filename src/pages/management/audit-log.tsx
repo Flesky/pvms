@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
 import type { DataTableColumn } from 'mantine-datatable'
-import { Box, Card } from '@mantine/core'
 import AppHeader from '@/components/AppHeader.tsx'
 import AppClientTable from '@/components/AppClientTable.tsx'
 import api from '@/utils/api.ts'
@@ -86,23 +85,23 @@ export default function AuditLog() {
               accessor: 'username',
             },
           ],
-          rowExpansion: {
-            content: ({ record }) => (
-              // JSON.stringify(JSON.parse(data.find(row => row.id === record.id).new_data))
-              <Box p="xl" bg="#F1F3F5">
-                <Card withBorder>
-                  <AppClientTable
-                    id="audit-log"
-                    tableProps={{
-                      records: [JSON.parse(data.find(row => row.id === record.id).new_data)].flat(),
-                      fetching: isPending,
-                      columns: schema[record.database_table],
-                    }}
-                  />
-                </Card>
-              </Box>
-            ),
-          },
+          // rowExpansion: {
+          //   content: ({ record }) => (
+          //     // JSON.stringify(JSON.parse(data.find(row => row.id === record.id).new_data))
+          //     <Box p="xl" bg="#F1F3F5">
+          //       <Card withBorder>
+          //         <AppClientTable
+          //           id="audit-log"
+          //           tableProps={{
+          //             records: [JSON.parse(data.find(row => row.id === record.id).new_data)].flat(),
+          //             fetching: isPending,
+          //             columns: schema[record.database_table],
+          //           }}
+          //         />
+          //       </Card>
+          //     </Box>
+          //   ),
+          // },
         }}
       >
       </AppClientTable>

@@ -33,6 +33,7 @@ export interface Voucher extends Result {
   MSISDN: any
   available: number
   service_reference: any
+  expiry_date: string
   business_unit: any
   batch_id: string
   note: any
@@ -284,6 +285,7 @@ export default function Vouchers() {
             { accessor: 'MSISDN', title: 'MSISDN' },
             { accessor: 'note', title: 'Note' },
             { accessor: 'available', title: 'Status', render: ({ available }) => (available ? 'Active' : 'Inactive') },
+            { accessor: 'expiry_date', title: 'Expiry date', render: ({ expiry_date }) => new Date(expiry_date).toLocaleString() },
             { accessor: 'created_at', render: ({ created_at }) => new Date(created_at).toLocaleString() },
             { accessor: 'created_by' },
             { accessor: 'updated_at', render: ({ created_at, updated_at }) => (created_at === updated_at) ? '' : new Date(updated_at).toLocaleString() },

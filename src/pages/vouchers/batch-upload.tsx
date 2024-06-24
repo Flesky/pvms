@@ -20,6 +20,8 @@ import { mixed, number, object, string } from 'yup'
 import { useState } from 'react'
 import type { HTTPError } from 'ky'
 import { IconAlertCircle } from '@tabler/icons-react'
+import { DateInput } from '@mantine/dates'
+import dayjs from 'dayjs'
 import AppHeader from '@/components/AppHeader.tsx'
 import api from '@/utils/api.ts'
 import type { GetAllResponse } from '@/types'
@@ -61,6 +63,7 @@ const schema = object().shape({
     'File is required',
     value => value instanceof File,
   ),
+  expiry_date: string().label('Expiry date'),
 })
 
 export default function BatchUploadVouchers() {
@@ -70,10 +73,15 @@ export default function BatchUploadVouchers() {
       batch_id: '',
       product_id: 0,
       // voucher_type_id: 0,
+      expiry_date: '',
       batch_count: 0,
       file: undefined,
     },
     validate: yupResolver(schema),
+    transformValues: values => ({
+      ...values,
+      expiry_date: values.expiry_date ? new Date(values.expiry_date).toISOString().split('T')[0] : undefined,
+    }),
     validateInputOnBlur: true,
   })
   const [errorMap, setErrorMap] = useState<
@@ -119,6 +127,7 @@ export default function BatchUploadVouchers() {
       formData.append('batch_id', String(values.batch_id))
       formData.append('batch_count', String(values.batch_count))
       formData.append('product_id', String(values.product_id))
+      formData.append('expiry_date', String(values.expiry_date))
       // formData.append('voucher_type_id', String(values.voucher_type_id))
       formData.append('file', values.file as File)
       return (await api.post('batchOrder', { body: formData }).json<{
@@ -197,6 +206,10 @@ export default function BatchUploadVouchers() {
                 data={products?.map(({ id, supplier, product_name, status }) => ({ label: `${supplier}: ${product_name}`, value: String(id), disabled: !status }))}
                 {...form.getInputProps('product_id')}
               />
+            </div>
+            <div className="grid md:grid-cols-2 md:items-baseline">
+              <Input.Label required>Expiry date</Input.Label>
+              <DateInput minDate={dayjs().add(1, 'day').toDate()} aria-label="Expiry date" {...form.getInputProps('expiry_date')} />
             </div>
             <div className="grid md:grid-cols-2 md:items-baseline">
               <Input.Label required>Batch count</Input.Label>
