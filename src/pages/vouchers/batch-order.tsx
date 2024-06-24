@@ -41,7 +41,7 @@ export default function BatchOrders() {
               accessor: 'batch_count',
               title: 'Number of vouchers',
             },
-            { accessor: 'expiry_date', title: 'Expiry date', render: ({ expiry_date }) => new Date(expiry_date).toLocaleString() },
+            { accessor: 'expiry_date', title: 'Expiry date', render: ({ expiry_date }) => expiry_date ? new Date(expiry_date).toLocaleString() : 'No expiration date' },
             {
               accessor: 'created_at',
               title: 'Created at',
