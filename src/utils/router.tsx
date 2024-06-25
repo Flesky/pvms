@@ -81,7 +81,7 @@ const navLinks: NavLinks = [
 
   { label: 'Configuration', icon: IconSettings, subject: 'Management', children: [
     { to: '/settings/error-codes', label: 'Error message overrides' },
-    { to: '/settings/email-recepients', label: 'Email recepients' },
+    { to: '/settings/email-recipients', label: 'Email recipients' },
   ] },
   // { to: '/vouchers/add', label: 'Add VouchersDeprecated', icon: IconTicket },
 ]
@@ -114,7 +114,7 @@ const router = createBrowserRouter([
           element: <ErrorCodes />,
         },
         {
-          path: 'email-recepients',
+          path: 'email-recipients',
           element: <AlertRecipients />,
         },
       ] },

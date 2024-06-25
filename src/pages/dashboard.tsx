@@ -24,10 +24,10 @@ export default function Dashboard() {
       timeout: 60000,
     }),
     onSuccess: () => {
-      notifications.show({ message: `Successfully notified recepients.`, color: 'green' })
+      notifications.show({ message: `Successfully notified recipients.`, color: 'green' })
     },
     onError: () => {
-      notifications.show({ message: 'Failed to notify recepients.', color: 'red' })
+      notifications.show({ message: 'Failed to notify recipients.', color: 'red' })
     },
   })
 
@@ -57,7 +57,7 @@ export default function Dashboard() {
                 {/*  ) */}
                 {/* } */}
                 <Button loading={alertNotification.data && alertNotification.isFetching} onClick={() => queryClient.invalidateQueries({ queryKey: ['alertNotification'] })} variant="default">Refresh</Button>
-                <Button loading={triggerEmailAlertPending} onClick={() => triggerEmailAlert()}>Notify alert recepients</Button>
+                <Button loading={triggerEmailAlertPending} onClick={() => triggerEmailAlert()}>Notify alert recipients</Button>
               </Group>
             </Group>
             <AppNewTable
