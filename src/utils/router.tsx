@@ -81,7 +81,7 @@ const navLinks: NavLinks = [
 
   { label: 'Configuration', icon: IconSettings, subject: 'Management', children: [
     { to: '/settings/error-codes', label: 'Error message overrides' },
-    { to: '/settings/email-recipients', label: 'Email recipients' },
+    { to: '/settings/email-recipients', label: 'Email configuration' },
   ] },
   // { to: '/vouchers/add', label: 'Add VouchersDeprecated', icon: IconTicket },
 ]
