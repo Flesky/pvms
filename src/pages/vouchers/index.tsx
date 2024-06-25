@@ -322,7 +322,7 @@ export default function Vouchers() {
                       size="xs"
                       variant="light"
                       loading={toggleVariables?.serial === row.serial}
-                      disabled={!!toggleVariables) || (new Date(row.expiry_date) < new Date())}
+                      disabled={!!toggleVariables || (new Date(row.expiry_date) < new Date())}
                       color={row.available ? 'red' : 'green'}
                       onClick={(e) => {
                         e.stopPropagation()
