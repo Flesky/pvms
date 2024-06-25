@@ -184,7 +184,7 @@ export default function AlertRecipients() {
         </form>
       </Modal>
 
-      <AppHeader title="Email Recipients">
+      <AppHeader title="Email Configuration">
         <Button
           leftSection={<IconPlus size={16} />}
           onClick={() => {
@@ -197,45 +197,47 @@ export default function AlertRecipients() {
         </Button>
       </AppHeader>
       {AlertConfig()}
-      <AppNewTable
-        data={data}
-        columns={[
-          { accessorKey: 'name', header: 'Name' },
-          { accessorKey: 'email', header: 'Email' },
-          { accessorKey: 'actions', header: 'Actions', cell: ({ row }) => (
-            <Group gap={4} justify="right" wrap="nowrap">
-              <Can I="update" a="Management">
-                <Button
-                  size="xs"
-                  variant="light"
-                  color="gray"
-                  loading={saveIsPending && saveVariables?.values.email === row.original.email}
-                  disabled={saveIsPending && !!saveVariables}
-                  onClick={() => {
-                    form.setValues(row.original)
-                    saveReset()
-                    open(`Edit ${row.original.name}`, row.original.id)
-                  }}
-                >
-                  Edit
-                </Button>
-              </Can>
-              <Can I="delete" a="Management">
-                <Button
-                  size="xs"
-                  variant="light"
-                  color="red"
-                  loading={removeVariables === row.original.id}
-                  onClick={() => remove(row.original.id)}
-                >
-                  Delete
-                </Button>
-              </Can>
-            </Group>
-          ) },
-        ]}
-        isLoading={isPending}
-      />
+      <Fieldset m="md" legend="Email Recipients">
+        <AppNewTable
+          data={data}
+          columns={[
+            { accessorKey: 'name', header: 'Name' },
+            { accessorKey: 'email', header: 'Email' },
+            { accessorKey: 'actions', header: 'Actions', cell: ({ row }) => (
+              <Group gap={4} justify="right" wrap="nowrap">
+                <Can I="update" a="Management">
+                  <Button
+                    size="xs"
+                    variant="light"
+                    color="gray"
+                    loading={saveIsPending && saveVariables?.values.email === row.original.email}
+                    disabled={saveIsPending && !!saveVariables}
+                    onClick={() => {
+                      form.setValues(row.original)
+                      saveReset()
+                      open(`Edit ${row.original.name}`, row.original.id)
+                    }}
+                  >
+                    Edit
+                  </Button>
+                </Can>
+                <Can I="delete" a="Management">
+                  <Button
+                    size="xs"
+                    variant="light"
+                    color="red"
+                    loading={removeVariables === row.original.id}
+                    onClick={() => remove(row.original.id)}
+                  >
+                    Delete
+                  </Button>
+                </Can>
+              </Group>
+            ) },
+          ]}
+          isLoading={isPending}
+        />
+      </Fieldset>
     </>
   )
 }
