@@ -89,6 +89,11 @@ export default function Dashboard() {
                   accessorKey: 'threshold_alert',
                   header: 'Threshold Alert',
                 },
+                {
+                  accessorKey: 'order_amount',
+                  header: 'Order Amount',
+                  cell: ({ cell }) => cell.getValue() ? cell.getValue() : 'Unspecified',
+                },
               ]}
             >
             </AppNewTable>

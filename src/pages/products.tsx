@@ -20,6 +20,7 @@ export interface Product extends Result {
   status: 0 | 1
   threshold_alert: number
   available_voucher_count: number
+  order_amount: number
 }
 
 const schema = yup.object().shape({
@@ -28,6 +29,7 @@ const schema = yup.object().shape({
   supplier: yup.string().trim().required().label('Supplier'),
   status: yup.boolean(),
   threshold_alert: yup.number().label('Threshold alert'),
+  order_amount: yup.number().label('Order amount'),
 })
 
 export default function Products() {
@@ -41,6 +43,7 @@ export default function Products() {
       supplier: '',
       status: true,
       threshold_alert: 0,
+      order_amount: 0,
     },
     validate: yupResolver(schema),
     validateInputOnBlur: true,
@@ -92,6 +95,7 @@ export default function Products() {
           <TextInput required mt="sm" label="Product name" {...form.getInputProps('product_name')} />
           <TextInput required mt="sm" label="Supplier" {...form.getInputProps('supplier')} />
           <NumberInput required mt="sm" label="Threshold alert" description="Notify when the number of vouchers in inventory falls below this number" {...form.getInputProps('threshold_alert')} />
+          <NumberInput required mt="sm" label="Order amount" description="The number of vouchers to order when the threshold alert is reached" {...form.getInputProps('order_amount')} />
           <Text size="sm" mt="sm">Status</Text>
           <Checkbox mt="sm" disabled={!id} label="Enable product" {...form.getInputProps('status', { type: 'checkbox' })}></Checkbox>
           {error && (
@@ -146,6 +150,11 @@ export default function Products() {
           {
             accessorKey: 'threshold_alert',
             header: 'Threshold Alert',
+          },
+          {
+            accessorKey: 'order_amount',
+            header: 'Order Amount',
+            cell: ({ cell }) => cell.getValue() ? cell.getValue() : 'Unspecified',
           },
           {
             accessorKey: 'created_at',

@@ -4,7 +4,7 @@ import { useForm, yupResolver } from '@mantine/form'
 import type { InferType } from 'yup'
 import * as yup from 'yup'
 import { object } from 'yup'
-import { Alert, Button, Grid, Group, Modal, Select, TextInput, Textarea } from '@mantine/core'
+import { Alert, Button, Grid, Group, Modal, Select, Text, TextInput, Textarea } from '@mantine/core'
 import { IconAlertCircle, IconPlus } from '@tabler/icons-react'
 import type { HTTPError } from 'ky'
 import { useSearchParams } from 'react-router-dom'
@@ -285,7 +285,13 @@ export default function Vouchers() {
             { accessor: 'MSISDN', title: 'MSISDN' },
             { accessor: 'note', title: 'Note' },
             { accessor: 'available', title: 'Status', render: ({ available }) => (available ? 'Active' : 'Inactive') },
-            { accessor: 'expiry_date', title: 'Expiry date', render: ({ expiry_date }) => expiry_date ? new Date(expiry_date).toLocaleString() : 'No expiration date' },
+            { accessor: 'expiry_date', title: 'Expiry date', render: ({ expiry_date }) => expiry_date
+              ? (
+                <Text c={new Date(expiry_date) < new Date() ? 'red' : 'gray'}>
+                  {new Date(expiry_date).toLocaleString()}
+                </Text>
+                )
+              : 'No expiration date' },
             { accessor: 'created_at', render: ({ created_at }) => new Date(created_at).toLocaleString() },
             { accessor: 'created_by' },
             { accessor: 'updated_at', render: ({ created_at, updated_at }) => (created_at === updated_at) ? '' : new Date(updated_at).toLocaleString() },

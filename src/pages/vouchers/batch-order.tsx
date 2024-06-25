@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Button } from '@mantine/core'
+import { Button, Text } from '@mantine/core'
 import type { GetAllResponse, Result } from '@/types'
 import type { Voucher } from '@/pages/vouchers/index.tsx'
 import api from '@/utils/api.ts'
@@ -43,7 +43,13 @@ export default function BatchOrders() {
               accessor: 'batch_count',
               title: 'Number of vouchers',
             },
-            { accessor: 'expiry_date', title: 'Expiry date', render: ({ expiry_date }) => expiry_date ? new Date(expiry_date).toLocaleString() : 'No expiration date' },
+            { accessor: 'expiry_date', title: 'Expiry date', render: ({ expiry_date }) => expiry_date
+              ? (
+                <Text c={new Date(expiry_date) < new Date() ? 'red' : 'gray'}>
+                  {new Date(expiry_date).toLocaleString()}
+                </Text>
+                )
+              : 'No expiration date' },
             {
               accessor: 'threshold_alert',
               title: 'Threshold alert',
