@@ -284,7 +284,7 @@ export default function Vouchers() {
             { accessor: 'PUK', title: 'PUK' },
             { accessor: 'MSISDN', title: 'MSISDN' },
             { accessor: 'note', title: 'Note' },
-            { accessor: 'available', title: 'Status', render: ({ available }) => (available ? 'Active' : 'Inactive') },
+            { accessor: 'available', title: 'Status', render: ({ available, expiry_date }) => (available && new Date(expiry_date) > new Date() ? 'Active' : 'Inactive') },
             { accessor: 'expiry_date', title: 'Expiry date', render: ({ expiry_date }) => expiry_date
               ? (
                 <Text c={new Date(expiry_date) < new Date() ? 'red' : 'gray'}>
@@ -308,7 +308,7 @@ export default function Vouchers() {
                       variant="light"
                       color="gray"
                       loading={saveIsPending && saveVariables?.values.serial === row.serial}
-                      disabled={saveIsPending && !!saveVariables}
+                      disabled={(saveIsPending && !!saveVariables) || (new Date(row.expiry_date) < new Date())}
                       onClick={(e) => {
                         e.stopPropagation()
                         saveReset()
