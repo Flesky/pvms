@@ -15,7 +15,7 @@ import Test from '@/pages/test.tsx'
 import VoucherTypes from '@/pages/vouchers/types.tsx'
 import type { Actions, Subjects } from '@/utils/ability.ts'
 import Dashboard from '@/pages/dashboard.tsx'
-import AlertRecipients from '@/pages/config/alert-recipients.tsx'
+import Email from '@/pages/config/email.tsx'
 import EmailLog from '@/pages/management/email-log.tsx'
 
 interface NavItem {
@@ -81,7 +81,7 @@ const navLinks: NavLinks = [
 
   { label: 'Configuration', icon: IconSettings, subject: 'Management', children: [
     { to: '/settings/error-codes', label: 'Error message overrides' },
-    { to: '/settings/email-recipients', label: 'Email configuration' },
+    { to: '/settings/email', label: 'Email configuration' },
   ] },
   // { to: '/vouchers/add', label: 'Add VouchersDeprecated', icon: IconTicket },
 ]
@@ -114,8 +114,8 @@ const router = createBrowserRouter([
           element: <ErrorCodes />,
         },
         {
-          path: 'email-recipients',
-          element: <AlertRecipients />,
+          path: 'email',
+          element: <Email />,
         },
       ] },
       { path: 'test', element: <Test /> },
