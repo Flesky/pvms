@@ -55,9 +55,10 @@ export interface BatchUploadErrorSchema {
 
 const schema = object().shape({
   batch_id: string().required().label('Batch ID'),
-  product_id: number().required(),
+  product_id: number().required().label('Product reference'),
   // voucher_type_id: number().required(),
-  batch_count: number().required().min(1),
+  batch_count: number().required().min(1).label('Batch count'),
+  expiry_days: number().transform((value, original) => original === '' ? undefined : value).min(1).label('Expiry date alert threshold'),
   file: mixed().test(
     'required',
     'File is required',
@@ -74,6 +75,7 @@ export default function BatchUploadVouchers() {
       product_id: 0,
       // voucher_type_id: 0,
       expiry_date: '',
+      expiry_days: '',
       batch_count: 0,
       file: undefined,
     },
@@ -128,6 +130,7 @@ export default function BatchUploadVouchers() {
       formData.append('batch_count', String(values.batch_count))
       formData.append('product_id', String(values.product_id))
       formData.append('expiry_date', String(values.expiry_date))
+      formData.append('expiry_days', String(values.expiry_days))
       // formData.append('voucher_type_id', String(values.voucher_type_id))
       formData.append('file', values.file as File)
       return (await api.post('batchOrder', { body: formData }).json<{
@@ -210,6 +213,13 @@ export default function BatchUploadVouchers() {
             <div className="grid md:grid-cols-2 md:items-baseline">
               <Input.Label required>Expiry date</Input.Label>
               <DateInput minDate={dayjs().add(1, 'day').toDate()} aria-label="Expiry date" {...form.getInputProps('expiry_date')} />
+            </div>
+            <div className="grid md:grid-cols-2 md:items-baseline">
+              <div className="mr-4 flex flex-col">
+                <Input.Label>Expiry date alert threshold</Input.Label>
+                <Input.Description>Sends out an alert the given number of days before the expiry date. Leave blank to disable.</Input.Description>
+              </div>
+              <NumberInput aria-label="Expiry days" min={1} {...form.getInputProps('expiry_days')} />
             </div>
             <div className="grid md:grid-cols-2 md:items-baseline">
               <Input.Label required>Batch count</Input.Label>
