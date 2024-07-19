@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Fieldset, Group, Modal, NumberInput, Select, Stack, Switch, TextInput } from '@mantine/core'
+import { Alert, Button, Fieldset, Group, Modal, Select, Stack, Switch, TextInput } from '@mantine/core'
 import { IconAlertCircle, IconPlus } from '@tabler/icons-react'
 import * as yup from 'yup'
 import { useForm, yupResolver } from '@mantine/form'
@@ -157,17 +157,17 @@ function AlertConfig() {
             </Button>
           </Group>
 
-          <Group align="end">
-            <NumberInput label="Batch expiry days from now" {...form.getInputProps('batch_expiry_days_from_now')} />
-            <Button
-              onClick={() => mutate(
-                { id: 4, value: Number(form.values.batch_expiry_days_from_now), message: `Batch expiry days from now set to ${form.values.batch_expiry_days_from_now}` },
-              )}
-              disabled={isPending || isSavePending}
-            >
-              Save
-            </Button>
-          </Group>
+          {/* <Group align="end"> */}
+          {/*  <NumberInput label="Batch expiry days from now" {...form.getInputProps('batch_expiry_days_from_now')} /> */}
+          {/*  <Button */}
+          {/*    onClick={() => mutate( */}
+          {/*      { id: 4, value: Number(form.values.batch_expiry_days_from_now), message: `Batch expiry days from now set to ${form.values.batch_expiry_days_from_now}` }, */}
+          {/*    )} */}
+          {/*    disabled={isPending || isSavePending} */}
+          {/*  > */}
+          {/*    Save */}
+          {/*  </Button> */}
+          {/* </Group> */}
         </Stack>
       </form>
     </Fieldset>
